@@ -113,7 +113,12 @@ msm_drm-$(CONFIG_DRM_MSM) += \
 	msm_gem_vma.o \
 	msm_smmu.o \
 	msm_prop.o \
-	msm_notifier.o\
+	msm_notifier.o
+
+ifdef CONFIG_TARGET_PROJECT_K7T
+msm_drm-y += \
+        dsi/exposure_adjustment.o
+endif
 
 obj-$(CONFIG_DRM_MSM)	+= msm_drm.o
 
