@@ -3616,12 +3616,8 @@ static __always_inline struct rq *
 context_switch(struct rq *rq, struct task_struct *prev,
 	       struct task_struct *next, struct rq_flags *rf)
 {
-	struct mm_struct *mm, *oldmm;
-
 	prepare_task_switch(rq, prev, next);
 
-	mm = next->mm;
-	oldmm = prev->active_mm;
 	/*
 	 * For paravirt, this is coupled with an exit in switch_to to
 	 * combine the page table reload and the switch backend into
@@ -3630,18 +3626,14 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	arch_start_context_switch(prev);
 
 	/*
-	 * If mm is non-NULL, we pass through switch_mm(). If mm is
-	 * NULL, we will pass through mmdrop() in finish_task_switch().
-	 * Both of these contain the full memory barrier required by
-	 * membarrier after storing to rq->curr, before returning to
-	 * user-space.
+	 * kernel -> kernel   lazy + transfer active
+	 *   user -> kernel   lazy + mmgrab() active
+	 *
+	 * kernel ->   user   switch + mmdrop() active
+	 *   user ->   user   switch
 	 */
-	if (!mm) {
-		next->active_mm = oldmm;
-		mmgrab(oldmm);
-		enter_lazy_tlb(oldmm, next);
-	} else
-		switch_mm_irqs_off(oldmm, mm, next);
+	if (!next->mm) {                                // to kernel
+		enter_lazy_tlb(prev->active_mm, next);
 
 		next->active_mm = prev->active_mm;
 		if (prev->mm)                           // from user
