@@ -118,3 +118,4 @@ obj-$(CONFIG_TOUCHSCREEN_FTS)	+= ft3418_i2c/
 obj-$(CONFIG_TOUCHSCREEN_COMMON)             += xiaomi/
 obj-$(CONFIG_TOUCHSCREEN_NT36xxx_HOSTDL_SPI)   += nt36525b_spi/
 obj-$(CONFIG_TOUCHSCREEN_FTS_SPI)	+= ft8006s_spi/
+obj-$(CONFIG_TP_COMMON)	+= tp_common.o
