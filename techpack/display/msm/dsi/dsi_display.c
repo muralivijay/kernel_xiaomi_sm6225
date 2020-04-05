@@ -5004,6 +5004,26 @@ error:
 	return rc;
 }
 
+static struct attribute *display_fs_attrs[] = {
+	NULL,
+};
+static struct attribute_group display_fs_attrs_group = {
+	.attrs = display_fs_attrs,
+};
+
+static int dsi_display_sysfs_init(struct dsi_display *display)
+{
+	int rc = 0;
+	struct device *dev = &display->pdev->dev;
+
+	rc = sysfs_create_group(&dev->kobj, &display_fs_attrs_group);
+	if (rc)
+		DSI_ERR("failed to create display device attributes");
+
+	return rc;
+
+}
+
 /**
  * dsi_display_bind - bind dsi device with controlling device
  * @dev:        Pointer to base of platform device
@@ -5069,6 +5089,12 @@ static int dsi_display_bind(struct device *dev,
 	rc = dsi_display_debugfs_init(display);
 	if (rc) {
 		DSI_ERR("[%s] debugfs init failed, rc=%d\n", display->name, rc);
+		goto error;
+	}
+
+	rc = dsi_display_sysfs_init(display);
+	if (rc) {
+		DSI_ERR("[%s] sysfs init failed, rc=%d\n", display->name, rc);
 		goto error;
 	}
 
