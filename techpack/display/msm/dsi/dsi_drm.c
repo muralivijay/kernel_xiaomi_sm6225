@@ -33,8 +33,6 @@ static struct dsi_display_mode_priv_info default_priv_info = {
 	.dsc_enabled = false,
 };
 
-struct drm_notify_data g_notify_data;
-
 /*
  *	drm_register_client - register a client notifier
  *	@nb:notifier block to callback when event happen
@@ -208,6 +206,7 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 	struct dsi_bridge *c_bridge = to_dsi_bridge(bridge);
 	struct drm_device *dev = bridge->dev;
 	int event = 0;
+        struct drm_notify_data g_notify_data;
 
 	/*add for thermal begin*/
 	if (dev->doze_state == DRM_BLANK_POWERDOWN) {
@@ -369,6 +368,7 @@ static void dsi_bridge_post_disable(struct drm_bridge *bridge)
 	struct dsi_bridge *c_bridge = to_dsi_bridge(bridge);
 	struct drm_device *dev = bridge->dev;
 	int event = 0;
+        struct drm_notify_data g_notify_data;
 
 	/*add for thermal begin*/
 	if (dev->doze_state == DRM_BLANK_UNBLANK) {
