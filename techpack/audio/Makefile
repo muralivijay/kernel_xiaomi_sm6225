@@ -86,4 +86,3 @@ obj-y += soc/
 obj-y += dsp/
 obj-y += ipc/
 obj-y += asoc/
-obj-$(CONFIG_AUDIO_ELLIPTIC_ULTRASOUND) += dsp/elliptic
