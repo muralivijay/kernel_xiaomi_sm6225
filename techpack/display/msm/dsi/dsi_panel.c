@@ -4242,7 +4242,7 @@ int dsi_panel_set_nolp(struct dsi_panel *panel)
 #ifdef CONFIG_TARGET_PROJECT_K7T
 	rc = dsi_panel_set_doze_status(panel, false);
 	if (rc)
-		DSI_ERR("unable to set doze on\n");
+		DSI_ERR("unable to set doze off\n");
 #endif
 exit:
 	mutex_unlock(&panel->panel_lock);
