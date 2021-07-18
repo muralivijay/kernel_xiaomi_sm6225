@@ -372,21 +372,15 @@ static void fts_show_touch_buffer(u8 *data, int datalen)
 void fts_release_all_finger(void)
 {
     struct input_dev *input_dev = fts_data->input_dev;
-#if FTS_MT_PROTOCOL_B_EN
     u32 finger_count = 0;
     u32 max_touches = fts_data->pdata->max_touch_number;
-#endif
 
     FTS_FUNC_ENTER();
     mutex_lock(&fts_data->report_mutex);
-#if FTS_MT_PROTOCOL_B_EN
     for (finger_count = 0; finger_count < max_touches; finger_count++) {
         input_mt_slot(input_dev, finger_count);
         input_mt_report_slot_state(input_dev, MT_TOOL_FINGER, false);
     }
-#else
-    input_mt_sync(input_dev);
-#endif
     input_report_key(input_dev, BTN_TOUCH, 0);
     input_sync(input_dev);
 
@@ -438,7 +432,6 @@ static int fts_input_report_key(struct fts_ts_data *data, int index)
     return -EINVAL;
 }
 
-#if FTS_MT_PROTOCOL_B_EN
 static int fts_input_report_b(struct fts_ts_data *data)
 {
     int i = 0;
@@ -521,72 +514,6 @@ static int fts_input_report_b(struct fts_ts_data *data)
     input_sync(data->input_dev);
     return 0;
 }
-
-#else
-static int fts_input_report_a(struct fts_ts_data *data)
-{
-    int i = 0;
-    int touchs = 0;
-    bool va_reported = false;
-    struct ts_event *events = data->events;
-
-    for (i = 0; i < data->touch_point; i++) {
-        if (fts_input_report_key(data, i) == 0) {
-            continue;
-        }
-
-        va_reported = true;
-        if (EVENT_DOWN(events[i].flag)) {
-            input_report_abs(data->input_dev, ABS_MT_TRACKING_ID, events[i].id);
-#if FTS_REPORT_PRESSURE_EN
-            if (events[i].p <= 0) {
-                events[i].p = 0x3f;
-            }
-            input_report_abs(data->input_dev, ABS_MT_PRESSURE, events[i].p);
-#endif
-            if (events[i].area <= 0) {
-                events[i].area = 0x09;
-            }
-            input_report_abs(data->input_dev, ABS_MT_TOUCH_MAJOR, events[i].area);
-
-            input_report_abs(data->input_dev, ABS_MT_POSITION_X, events[i].x);
-            input_report_abs(data->input_dev, ABS_MT_POSITION_Y, events[i].y);
-
-            input_mt_sync(data->input_dev);
-
-            if ((data->log_level >= 2) ||
-                ((1 == data->log_level) && (FTS_TOUCH_DOWN == events[i].flag))) {
-                FTS_DEBUG("[A]P%d(%d, %d)[p:%d,tm:%d] DOWN!",
-                          events[i].id,
-                          events[i].x, events[i].y,
-                          events[i].p, events[i].area);
-            }
-            touchs++;
-        }
-    }
-
-    /* last point down, current no point but key */
-    if (data->touchs && !touchs) {
-        va_reported = true;
-    }
-    data->touchs = touchs;
-
-    if (va_reported) {
-        if (EVENT_NO_DOWN(data)) {
-            if (data->log_level >= 1) {
-                FTS_DEBUG("[A]Points All Up!");
-            }
-            input_report_key(data->input_dev, BTN_TOUCH, 0);
-            input_mt_sync(data->input_dev);
-        } else {
-            input_report_key(data->input_dev, BTN_TOUCH, 1);
-        }
-    }
-
-    input_sync(data->input_dev);
-    return 0;
-}
-#endif
 
 static int fts_read_touchdata(struct fts_ts_data *data)
 {
@@ -707,11 +634,7 @@ static void fts_irq_read_report(void)
     ret = fts_read_parse_touchdata(ts_data);
     if (ret == 0) {
         mutex_lock(&ts_data->report_mutex);
-#if FTS_MT_PROTOCOL_B_EN
         fts_input_report_b(ts_data);
-#else
-        fts_input_report_a(ts_data);
-#endif
         mutex_unlock(&ts_data->report_mutex);
     }
 
@@ -792,11 +715,7 @@ static int fts_input_init(struct fts_ts_data *ts_data)
             input_set_capability(input_dev, EV_KEY, pdata->keys[key_num]);
     }
 
-#if FTS_MT_PROTOCOL_B_EN
     input_mt_init_slots(input_dev, pdata->max_touch_number, INPUT_MT_DIRECT);
-#else
-    input_set_abs_params(input_dev, ABS_MT_TRACKING_ID, 0, 0x0F, 0, 0);
-#endif
     input_set_abs_params(input_dev, ABS_MT_POSITION_X, pdata->x_min, pdata->x_max, 0, 0);
     input_set_abs_params(input_dev, ABS_MT_POSITION_Y, pdata->y_min, pdata->y_max, 0, 0);
     input_set_abs_params(input_dev, ABS_MT_TOUCH_MAJOR, 0, 0xFF, 0, 0);
