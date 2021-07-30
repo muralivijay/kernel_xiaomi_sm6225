@@ -819,7 +819,7 @@ static void dwc3_debugfs_create_endpoint_files(struct dwc3_ep *dep,
 	}
 }
 
-void dwc3_debugfs_create_endpoint_dir(struct dwc3_ep *dep,
+static void dwc3_debugfs_create_endpoint_dir(struct dwc3_ep *dep,
 		struct dentry *parent)
 {
 	struct dentry		*dir;
