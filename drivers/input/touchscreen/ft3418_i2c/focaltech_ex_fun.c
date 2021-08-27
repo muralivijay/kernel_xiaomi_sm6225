@@ -1246,32 +1246,6 @@ int lct_fts_get_tpfwver(const char *cmd)
 }
 EXPORT_SYMBOL(lct_fts_get_tpfwver);
 
-int lct_fts_tp_selftest_callback(unsigned char cmd)
-{
-	int ret = 0;
-	switch (cmd) {
-	case TP_SELFTEST_CMD_LONGCHEER_MMI:
-		ret = lct_tp_selftest_all();
-		break;
-	case TP_SELFTEST_CMD_XIAOMI_I2C:
-		ret = lct_tp_selftest_all();
-		break;
-	case TP_SELFTEST_CMD_XIAOMI_OPEN:
-		ret = lct_tp_selftest_all();
-		break;
-	case TP_SELFTEST_CMD_XIAOMI_SHORT:
-		ret = lct_tp_selftest_all();
-		break;
-	default:
-		break;
-
-
-	}
-	return ret;
-}
-
-EXPORT_SYMBOL(lct_fts_tp_selftest_callback);
-
 #if LCT_TP_GRIP_AREA_EN
 int lct_fts_tp_get_screen_angle_callback(void)
 {
