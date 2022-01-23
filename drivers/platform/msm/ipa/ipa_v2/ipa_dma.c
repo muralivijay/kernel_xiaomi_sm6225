@@ -63,9 +63,6 @@
 static char dbg_buff[IPADMA_MAX_MSG_LEN];
 static void ipa_dma_debugfs_init(void);
 static void ipa_dma_debugfs_destroy(void);
-#else
-static void ipa_dma_debugfs_init(void) {}
-static void ipa_dma_debugfs_destroy(void) {}
 #endif
 
 /**
@@ -246,7 +243,9 @@ int ipa2_dma_init(void)
 		res = -EPERM;
 		goto fail_async_cons;
 	}
+#ifdef CONFIG_DEBUG_FS
 	ipa_dma_debugfs_init();
+#endif
 	ipa_dma_ctx = ipa_dma_ctx_t;
 	IPADMA_DBG("ASYNC MEMCPY pipes are connected\n");
 
@@ -738,7 +737,9 @@ void ipa2_dma_destroy(void)
 		IPADMA_ERR("teardown IPADMA SYNC PROD failed\n");
 	ipa_dma_ctx->ipa_dma_sync_prod_hdl = 0;
 
+#ifdef CONFIG_DEBUG_FS
 	ipa_dma_debugfs_destroy();
+#endif
 	kmem_cache_destroy(ipa_dma_ctx->ipa_dma_xfer_wrapper_cache);
 	kfree(ipa_dma_ctx);
 	ipa_dma_ctx = NULL;
