@@ -316,7 +316,9 @@ struct osm_entry {
 };
 
 static void __iomem *virt_base;
+#ifdef CONFIG_DEBUG_FS
 static struct dentry *osm_debugfs_base;
+#endif
 static struct regulator *vdd_pwrcl;
 static struct regulator *vdd_perfcl;
 
@@ -337,7 +339,9 @@ static const struct regmap_config osm_qcom_regmap_config = {
 struct clk_osm {
 	struct clk_hw hw;
 	struct osm_entry osm_table[OSM_TABLE_SIZE];
+#ifdef CONFIG_DEBUG_FS
 	struct dentry *debugfs;
+#endif
 	struct regulator *vdd_reg;
 	struct platform_device *vdd_dev;
 	void *vbases[NUM_BASES];
@@ -2905,6 +2909,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(debugfs_acd_debug_reg_addr_fops,
 			debugfs_set_debug_reg_addr,
 			"%llu\n");
 
+#ifdef CONFIG_DEBUG_FS
 static void populate_debugfs_dir(struct clk_osm *c)
 {
 	struct dentry *temp;
@@ -3018,6 +3023,7 @@ exit:
 	if (IS_ERR_OR_NULL(temp))
 		debugfs_remove_recursive(c->debugfs);
 }
+#endif
 
 static int clk_osm_panic_callback(struct notifier_block *nfb,
 				  unsigned long event,
@@ -3407,8 +3413,10 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	}
 
 	populate_opp_table(pdev);
+#ifdef CONFIG_DEBUG_FS
 	populate_debugfs_dir(&pwrcl_clk);
 	populate_debugfs_dir(&perfcl_clk);
+#endif
 
 	of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
 
