@@ -129,11 +129,6 @@ struct class *get_xiaomi_touch_class(void)
 	return xiaomi_touch_dev.class;
 }
 
-struct device *get_xiaomi_touch_dev(void)
-{
-	return xiaomi_touch_dev.dev;
-}
-
 int xiaomitouch_register_modedata(struct xiaomi_touch_interface *data)
 {
 	int ret = 0;
