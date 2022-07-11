@@ -76,52 +76,10 @@ int enter_palm_mode(struct fts_ts_data *data);
 extern char mtkfb_lcm_name[256];
 #endif
 
-#if LCT_TP_USB_PLUGIN
-static void fts_ts_usb_plugin_work_func(struct work_struct *work);
-DECLARE_WORK(fts_usb_plugin_work, fts_ts_usb_plugin_work_func);
-extern touchscreen_usb_plugin_data_t g_touchscreen_usb_pulgin;
-#endif
-
 /*****************************************************************************
 * Global variable or extern global variabls/functions
 *****************************************************************************/
 struct fts_ts_data *fts_data;
-int lct_fts_tp_gesture_callback(bool flag)
-{
-	struct fts_ts_data *ts_data = fts_data;
-	if (ts_data->suspended) {
-		//delay_gesture = true;
-		FTS_INFO("The gesture mode will be %s the next time you wakes up.", flag ? "enabled" : "disabled");
-		return -EPERM;
-	}
-	set_lct_tp_gesture_status(flag);
-	//set_lcd_reset_gpio_keep_high(flag);
-
-	if (flag)
-		ts_data->gesture_mode = ENABLE;
-	else
-		ts_data->gesture_mode = DISABLE;
-	return 0;
-}
-
-#if LCT_TP_USB_PLUGIN
-void fts_ts_usb_event_callback(void)
-{
-	schedule_work(&fts_usb_plugin_work);
-}
-
-static void fts_ts_usb_plugin_work_func(struct work_struct *work)
-{
-	struct fts_ts_data *ts_data = fts_data;
-	if (ts_data->suspended) {
-		FTS_ERROR("tp is suspend,can not be set\n");
-		return;
-	}
-	lct_fts_set_charger_mode(g_touchscreen_usb_pulgin.usb_plugged_in);
-	return;
-
-}
-#endif
 
 /*****************************************************************************
 * Static function prototypes
@@ -744,34 +702,6 @@ static int fts_read_parse_touchdata(struct fts_ts_data *data)
 
     return 0;
 }
-#if LCT_TP_PALM_EN
-int enter_palm_mode(struct fts_ts_data *data)
-{
-	u8 mode = 0;
-	if(fts_data->palm_changed == 0)
-		goto exit;
-	if (get_lct_tp_palm_status()) {
-		fts_read_reg(0x9B, &mode);
-		if (0x00 == mode)
-			return 0;
-		else if (0x01 == mode) {
-			FTS_FUNC_ENTER();
-			input_report_key(data->input_dev, KEY_SLEEP, 1);
-			input_sync(data->input_dev);
-			input_report_key(data->input_dev, KEY_SLEEP, 0);
-			input_sync(data->input_dev);
-
-		}
-
-	}
-	fts_data->palm_changed = 0;
-exit:
-	FTS_FUNC_EXIT();
-	return 0;
-
-}
-#endif
-
 
 static void fts_irq_read_report(void)
 {
@@ -796,10 +726,6 @@ static void fts_irq_read_report(void)
 #endif
         mutex_unlock(&ts_data->report_mutex);
     }
-
-#if LCT_TP_PALM_EN
-		enter_palm_mode(ts_data);
-#endif
 
 #if FTS_ESDCHECK_EN
     fts_esdcheck_set_intr(0);
@@ -1750,13 +1676,6 @@ static int fts_ts_probe_entry(struct fts_ts_data *ts_data)
         FTS_ERROR("create apk debug node fail");
     }
 
-
-	//longcheer touch procfs
-	ret = lct_create_procfs(ts_data);
-	if (ret < 0) {
-		FTS_ERROR("create procfs node fail");
-	}
-
     ret = fts_create_sysfs(ts_data);
     if (ret) {
         FTS_ERROR("create sysfs node fail");
@@ -1855,10 +1774,6 @@ static int fts_ts_probe_entry(struct fts_ts_data *ts_data)
     register_early_suspend(&ts_data->early_suspend);
 #endif
 
-#if LCT_TP_USB_PLUGIN
-	g_touchscreen_usb_pulgin.event_callback = fts_ts_usb_event_callback;
-#endif
-
 /* 2021.10.9 longcheer wugang add (xiaomi game mode) start */
 	if (ts_data->fts_tp_class == NULL) {
 #ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
@@ -1928,9 +1843,6 @@ static int fts_ts_remove_entry(struct fts_ts_data *ts_data)
 #endif
 
     fts_release_apk_debug_channel(ts_data);
-
-	//remove longcheer procfs
-	lct_remove_procfs(ts_data);
 
     fts_remove_sysfs(ts_data);
     fts_ex_mode_exit(ts_data);
@@ -2087,19 +1999,7 @@ static int fts_ts_resume(struct device *dev)
     }
 
     ts_data->suspended = false;
-#if LCT_TP_WORK_EN
-		if (get_lct_tp_work_status())
-				fts_irq_enable();
-		else
-				FTS_ERROR("Touchscreen Disabled, Can't enable irq.");
-#else
 		fts_irq_enable();
-#endif
-
-#if LCT_TP_USB_PLUGIN
-	if (g_touchscreen_usb_pulgin.valid)
-		g_touchscreen_usb_pulgin.event_callback();
-#endif
 
     FTS_FUNC_EXIT();
     return 0;
