@@ -137,7 +137,7 @@ short Read_RomID(unsigned char *RomID)
 
 	ds_dbg("Ready to write 0x33 to maxim IC!\n");
 	write_byte(CMD_READ_ROM);
-	Delay_us(10);
+	udelay(10);
 	for (i = 0; i < 8; i++)
 		RomID[i] = read_byte();
 
@@ -249,7 +249,7 @@ unsigned char *read_buf, int *read_len, int write_len)
 	// check for strong pull-up
 	if (delay_ms > 0) {
 		write_byte(CMD_RELEASE_BYTE);
-		Delay_us(1000*delay_ms);
+		mdelay(delay_ms);
 	}
 
 	read_byte();
@@ -378,7 +378,7 @@ void Virtual_cmd_readStatus(void)
 	read_byte();
 	read_byte();
 	write_byte(CMD_RELEASE_BYTE);
-	Delay_us(50*1000);
+        mdelay(50);
 
 for(num=0;num<11;num++)
 	read_byte();
@@ -1029,7 +1029,7 @@ static int ds28el16_Read_RomID_retry(unsigned char *RomID)
 		ds_info("Virtual_cmd_readStatus Repeat %d...\n", i);
 		Virtual_cmd_readStatus();
 		Read_RomID(RomID);
-		Delay_us(100);
+		udelay(100);
 	}
 
 	for (i = 0; i < GET_ROM_ID_RETRY; i++) {
@@ -1415,7 +1415,7 @@ struct device_attribute *attr, char *buf)
 		ds_dbg("RomID = %02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x\n",
 		RomID[0], RomID[1], RomID[2], RomID[3],
 		RomID[4], RomID[5], RomID[6], RomID[7]);
-		Delay_us(1000);
+		mdelay(1);
 	}
 	ds_log("test done\nsuccess time : %d\n", count);
 	return scnprintf(buf, PAGE_SIZE,
@@ -1468,7 +1468,7 @@ struct device_attribute *attr, char *buf)
 		pagedata[4], pagedata[5], pagedata[6], pagedata[7],
 		pagedata[8], pagedata[9], pagedata[10], pagedata[11],
 		pagedata[12], pagedata[13], pagedata[14], pagedata[15]);
-		Delay_us(1000);
+		mdelay(1);
 	}
 	ds_log("test done\nsuccess time : %d\n", count);
 	return scnprintf(buf, PAGE_SIZE,
@@ -1689,7 +1689,7 @@ struct device_attribute *attr, char *buf)
 		status[4], status[5], status[6], status[7],
 		status[8], status[9], status[10], status[11],
 		status[12], status[13], status[14], status[15]);
-		Delay_us(1000);
+		mdelay(1);
 	}
 	ds_log("test done\nsuccess time : %d\n", count);
 	return scnprintf(buf, PAGE_SIZE,
