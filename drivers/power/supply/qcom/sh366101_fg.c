@@ -37,7 +37,7 @@
 #include <linux/regmap.h>
 #include <linux/random.h>
 #include <linux/ktime.h>
-#include <sh366101_fg.h>
+#include "sh366101_fg.h"
 #include <linux/pmic-voter.h>
 
 #undef FG_DEBUG

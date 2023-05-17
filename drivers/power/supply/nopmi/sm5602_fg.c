@@ -36,7 +36,7 @@
 #include <linux/regmap.h>
 #include <linux/random.h>
 #include <linux/ktime.h>
-#include <sm5602_fg.h>
+#include "sm5602_fg.h"
 #include <linux/pmic-voter.h>//"pmic-voter.h"
 //#include "step-chg-jeita.h"
 
