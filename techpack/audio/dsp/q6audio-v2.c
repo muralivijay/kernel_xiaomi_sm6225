@@ -390,6 +390,10 @@ int q6audio_get_port_index(u16 port_id)
 		return IDX_RT_PROXY_PORT_002_RX;
 	case RT_PROXY_PORT_002_TX:
 		return IDX_RT_PROXY_PORT_002_TX;
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+	case AFE_PORT_ID_PSEUDOPORT_01:
+		return IDX_AFE_PORT_ID_PSEUDOPORT_01;
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 	default: return -EINVAL;
 	}
 }
@@ -1210,6 +1214,9 @@ int q6audio_validate_port(u16 port_id)
 	case AFE_PORT_ID_RX_CODEC_DMA_RX_7:
 	case RT_PROXY_PORT_002_RX:
 	case RT_PROXY_PORT_002_TX:
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+	case AFE_PORT_ID_PSEUDOPORT_01:
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 	{
 		ret = 0;
 		break;

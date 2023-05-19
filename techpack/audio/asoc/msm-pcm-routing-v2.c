@@ -32,6 +32,10 @@
 #include <dsp/q6core.h>
 #include <dsp/q6common.h>
 #include <dsp/audio_cal_utils.h>
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+#include <dsp/apr_elliptic.h>
+#include <elliptic/elliptic_mixer_controls.h>
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 
 #include "msm-pcm-routing-v2.h"
 #include "msm-pcm-routing-devdep.h"
@@ -24339,6 +24343,12 @@ static const struct snd_soc_dapm_widget msm_qdsp6_widgets[] = {
 		0, 0, 0, 0),
 	SND_SOC_DAPM_AIF_OUT("CDC_DMA_UL_HL", "CDC_DMA_HOSTLESS Capture",
 		0, 0, 0, 0),
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+	SND_SOC_DAPM_AIF_IN("CDC_DMA_2_DL_HL", "CDC_DMA_2_HOSTLESS Playback",
+		0, 0, 0, 0),
+	SND_SOC_DAPM_AIF_OUT("CDC_DMA_2_UL_HL", "CDC_DMA_2_HOSTLESS Capture",
+		0, 0, 0, 0),
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 	SND_SOC_DAPM_AIF_OUT("TX3_CDC_DMA_UL_HL",
 		"TX3_CDC_DMA_HOSTLESS Capture", 0, 0, 0, 0),
 #endif
@@ -27171,6 +27181,10 @@ static const struct snd_soc_dapm_route intercon[] = {
 	{"CDC_DMA_UL_HL", NULL, "VA_CDC_DMA_TX_0"},
 	{"RX_CDC_DMA_RX_0_DL_HL", "Switch", "CDC_DMA_DL_HL"},
 	{"RX_CDC_DMA_RX_0", NULL, "RX_CDC_DMA_RX_0_DL_HL"},
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+	{"RX_CDC_DMA_RX_1", NULL, "CDC_DMA_2_DL_HL"},
+	{"CDC_DMA_2_UL_HL", NULL, "TX_CDC_DMA_TX_4"},
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 	{"RX_CDC_DMA_RX_1_DL_HL", "Switch", "CDC_DMA_DL_HL"},
 	{"RX_CDC_DMA_RX_1", NULL, "RX_CDC_DMA_RX_1_DL_HL"},
 	{"TX3_CDC_DMA_UL_HL", NULL, "TX_CDC_DMA_TX_3"},
@@ -31595,6 +31609,10 @@ static int msm_routing_probe(struct snd_soc_component *component)
 				      ARRAY_SIZE(pll_clk_drift_controls));
 	snd_soc_add_component_controls(component, mclk_src_controls,
 				      ARRAY_SIZE(mclk_src_controls));
+
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+	elliptic_add_component_controls(component);
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 
 	return 0;
 }

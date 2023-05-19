@@ -13,7 +13,7 @@ static const struct reg_default wcd937x_defaults[] = {
 	{ WCD937X_ANA_BIAS,                      0x00 },
 	{ WCD937X_ANA_RX_SUPPLIES,               0x00 },
 	{ WCD937X_ANA_HPH,                       0x0C },
-	{ WCD937X_ANA_EAR,                       0x00 },
+	{ WCD937X_ANA_EAR,                       0x40 },/* lct modify for open ocp */
 	{ WCD937X_ANA_EAR_COMPANDER_CTL,         0x02 },
 	{ WCD937X_ANA_TX_CH1,                    0x20 },
 	{ WCD937X_ANA_TX_CH2,                    0x00 },
@@ -49,7 +49,7 @@ static const struct reg_default wcd937x_defaults[] = {
 	{ WCD937X_MBHC_CTL_SPARE_2,              0x00 },
 	{ WCD937X_MBHC_CTL_BCS,                  0x00 },
 	{ WCD937X_MBHC_MOISTURE_DET_FSM_STATUS,  0x00 },
-	{ WCD937X_MBHC_TEST_CTL,                 0x00 },
+	{ WCD937X_MBHC_TEST_CTL,                 0x30 },/*lct modify for 05514178 default 0x00 */
 	{ WCD937X_LDOH_MODE,                     0x2B },
 	{ WCD937X_LDOH_BIAS,                     0x68 },
 	{ WCD937X_LDOH_STB_LOADS,                0x00 },

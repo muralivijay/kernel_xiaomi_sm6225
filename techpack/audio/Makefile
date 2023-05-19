@@ -29,6 +29,10 @@ LINUXINCLUDE    += \
                 -I$(srctree)/techpack/audio/include/uapi \
                 -I$(srctree)/techpack/audio/include
 
+ifeq ($(CONFIG_AUDIO_ELLIPTIC_ULTRASOUND), y)
+LINUXINCLUDE    += \
+                -I$(srctree)/techpack/audio/include/elliptic
+endif
 ifeq ($(CONFIG_ARCH_SDXPOORWILLS), y)
 LINUXINCLUDE    += \
                 -include $(srctree)/techpack/audio/config/sdxpoorwillsautoconf.h
@@ -53,3 +57,4 @@ obj-y += soc/
 obj-y += dsp/
 obj-y += ipc/
 obj-y += asoc/
+obj-$(CONFIG_AUDIO_ELLIPTIC_ULTRASOUND) += dsp/elliptic

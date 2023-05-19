@@ -36,9 +36,21 @@ ifeq ($(KERNEL_BUILD), 0)
 		INCS    +=  -include $(AUDIO_ROOT)/config/litoautoconf.h
 	endif
 	ifeq ($(CONFIG_ARCH_BENGAL), y)
-		include $(AUDIO_ROOT)/config/bengalauto.conf
-		export
-		INCS    +=  -include $(AUDIO_ROOT)/config/bengalautoconf.h
+		ifdef CONFIG_TARGET_PROJECT_C3Q
+			include $(AUDIO_ROOT)/config/fogauto.conf
+			export
+			INCS    +=  -include $(AUDIO_ROOT)/config/fogautoconf.h
+		else		
+			ifdef CONFIG_TARGET_PROJECT_K7T
+				include $(AUDIO_ROOT)/config/spesauto.conf
+				export
+				INCS    +=  -include $(AUDIO_ROOT)/config/spesautoconf.h
+			else
+				include $(AUDIO_ROOT)/config/bengalauto.conf
+				export
+				INCS    +=  -include $(AUDIO_ROOT)/config/bengalautoconf.h
+			endif
+		endif
 	endif
 	ifeq ($(CONFIG_ARCH_QCS405), y)
 		include $(AUDIO_ROOT)/config/qcs405auto.conf
