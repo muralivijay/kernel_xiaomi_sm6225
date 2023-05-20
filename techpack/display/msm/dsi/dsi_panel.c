@@ -488,6 +488,15 @@ exit:
 	return rc;
 }
 
+#ifdef CONFIG_TARGET_PROJECT_C3Q
+static bool lcd_reset_keep_high = false;
+void set_lcd_reset_gpio_keep_high(bool en)
+{
+	lcd_reset_keep_high = en;
+}
+EXPORT_SYMBOL(set_lcd_reset_gpio_keep_high);
+#endif
+
 static int dsi_panel_power_off(struct dsi_panel *panel)
 {
 	int rc = 0;
