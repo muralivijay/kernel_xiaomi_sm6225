@@ -1,0 +1,1 @@
+obj-$(CONFIG_SPECTRA_CAMERA) += wl2866d.o
