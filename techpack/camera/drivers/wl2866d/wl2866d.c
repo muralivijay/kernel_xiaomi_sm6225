@@ -762,6 +762,10 @@ void cam_wl2866_exit_module(void)
     pr_info("%s: delete wl2866d driver success\n", __func__);
 }
 
+//allow work as standalone module
+module_init(cam_wl2866_init_module);
+module_exit(cam_wl2866_exit_module);
+
 MODULE_DESCRIPTION("WL2866D Power IC Driver");
 MODULE_LICENSE("GPL");
 MODULE_VERSION("1.0");
