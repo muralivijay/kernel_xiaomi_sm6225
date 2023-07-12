@@ -68,6 +68,16 @@
 #define SM_RAW_SOC_FULL		1000 //100.0%
 #define SM_RECHARGE_SOC		971  //98.5%
 
+//spes-capacity-start
+#define ENABLE_MAP_SOC
+
+#ifdef ENABLE_MAP_SOC
+#define MAP_MAX_SOC		98
+#define MAP_RATE_SOC	985
+#define MAP_MIN_SOC		4
+#endif
+//spes-capacity-end
+
 #define BMS_FG_VERIFY		"BMS_FG_VERIFY"
 #define BMS_FC_VOTER		"BMS_FC_VOTER"
 
@@ -1348,20 +1358,15 @@ static int fg_get_property(struct power_supply *psy, enum power_supply_property 
 		mutex_lock(&sm->data_lock);
 		if (ret >= 0)
 			sm->batt_soc = ret;
-		if (sm->param.batt_soc >= 0)
-			val->intval = sm->param.batt_soc/10;
-		else if ((ret >= 0) && (sm->param.batt_soc == -EINVAL))
-			val->intval = (sm->batt_soc > 16) ? ((sm->batt_soc*10 + 96)/97) : (sm->batt_soc/10) ;
-		else
-			val->intval = 50;
-
-		/* capacity should be between 0% and 100% */
-		if (val->intval > 100)
-			val->intval = 100;
-		if (val->intval < 0)
-			val->intval = 0;
-
+#ifdef ENABLE_MAP_SOC
+		val->intval = (((100*(sm->batt_soc*10+MAP_MAX_SOC))/MAP_RATE_SOC)-MAP_MIN_SOC)/10;
+#else
+		val->intval = sm->batt_soc/10;
+#endif
+		pr_info("fg POWER_SUPPLY_PROP_STATUS:%d\n", val->intval);
 		mutex_unlock(&sm->data_lock);
+
+           /*  Xiaomi shutdown_delay */
 		if (sm->shutdown_delay_enable) {
 			if (val->intval == 0) {
 				sm->is_charging = is_battery_charging(sm);
@@ -1397,6 +1402,7 @@ static int fg_get_property(struct power_supply *psy, enum power_supply_property 
 				}
 			}
 		}
+           /*  Xiaomi shutdown_delay */
 		break;
 
 	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
@@ -1414,7 +1420,7 @@ static int fg_get_property(struct power_supply *psy, enum power_supply_property 
 			ret = fg_read_temperature(sm, TEMPERATURE_IN);
 		else if (sm->en_temp_ex)
 			ret = fg_read_temperature(sm, TEMPERATURE_EX);
-		else 
+		else
 			ret = -ENODATA;
 		if (ret > 0)
 			sm->batt_temp = ret;
@@ -1479,7 +1485,7 @@ static int fg_get_property(struct power_supply *psy, enum power_supply_property 
 	case POWER_SUPPLY_PROP_SOH:
 		val->intval = 100;
 		break;
-/*	
+/*
 	case POWER_SUPPLY_PROP_CHIP_OK:
 		if (sm->fake_chip_ok != -EINVAL) {
 			val->intval = sm->fake_chip_ok;
@@ -1519,7 +1525,7 @@ static int fg_set_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_CHIP_OK:
 		sm->fake_chip_ok = !!val->intval;
-		break;	
+		break;
 	default:
 		return -EINVAL;
 	}
@@ -1534,7 +1540,7 @@ static int fg_prop_is_writeable(struct power_supply *psy,
 
 	switch (prop) {
 	case POWER_SUPPLY_PROP_TEMP:
-	case POWER_SUPPLY_PROP_CAPACITY:
+	//case POWER_SUPPLY_PROP_CAPACITY:
 	case POWER_SUPPLY_PROP_FASTCHARGE_MODE:
 	case POWER_SUPPLY_PROP_CHIP_OK:
 		ret = 1;
