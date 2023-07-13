@@ -725,7 +725,7 @@ static struct i2c_driver wl2866d_i2c_driver =
  *
  * @return  Error code indicating success or failure
  */
-int cam_wl2866_init_module(void)
+static int __init cam_wl2866_init_module(void)
 {
     u8 ret = 0;
     int num_retry = 3;
@@ -756,7 +756,7 @@ int cam_wl2866_init_module(void)
 /*!
  * WL2866D cleanup function
  */
-void cam_wl2866_exit_module(void)
+static void __exit cam_wl2866_exit_module(void)
 {
     i2c_del_driver(&wl2866d_i2c_driver);
     pr_info("%s: delete wl2866d driver success\n", __func__);

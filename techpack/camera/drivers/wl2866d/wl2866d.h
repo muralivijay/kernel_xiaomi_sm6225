@@ -15,11 +15,5 @@ enum {
 	DISCHARGE_DISABLE,
 };
 
-/* wl2866 init module */
-int cam_wl2866_init_module(void);
-
-/* wl2866 exit module */
-void cam_wl2866_exit_module(void);
-
 int wl2866d_camera_power_control(unsigned int out_iotype, int is_power_on);
 #endif /* __WL2866D_H */
