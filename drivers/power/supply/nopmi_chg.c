@@ -273,7 +273,7 @@ static int nopmi_batt_get_prop_internal(struct power_supply *psy,
 		pval->intval = nopmi_chg->input_suspend;
 		break;
 	default:
-		pr_err("batt power supply prop %d not supported\n", psp);
+		pr_debug("batt power supply prop %d not supported\n", psp);
 		return -EINVAL;
 	}
 	if (rc < 0) {
