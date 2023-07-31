@@ -9,6 +9,51 @@
 #include "cam_flash_core.h"
 #include "cam_common_util.h"
 
+/* Spes flashlight by muralivijay@github */
+#ifdef CONFIG_CAMERA_FLASH_SPES
+/* pinctrl states */
+#define CAM_FLASH_PINCTRL_STATE_SLEEP "cam_suspend"
+#define CAM_FLASH_PINCTRL_STATE_DEFAULT "cam_default"
+
+int msm_flash_pinctrl_init(struct cam_flash_ctrl *fctrl)
+{
+
+        struct device *dev;
+
+        dev = &fctrl->pdev->dev;
+
+        fctrl->pinctrl = devm_pinctrl_get(dev);
+        if (IS_ERR_OR_NULL(fctrl->pinctrl)) {
+                CAM_DBG(CAM_FLASH, "Getting flash pinctrl handle failed");
+                return -EINVAL;
+        }
+        fctrl->gpio_state_active =
+                pinctrl_lookup_state(fctrl->pinctrl,
+                                CAM_FLASH_PINCTRL_STATE_DEFAULT);
+        if (IS_ERR_OR_NULL(fctrl->gpio_state_active)) {
+                CAM_ERR(CAM_FLASH,
+                        "Failed to get the flash on state pinctrl handle");
+                return -EINVAL;
+        }
+        fctrl->gpio_state_suspend
+                = pinctrl_lookup_state(fctrl->pinctrl,
+                                CAM_FLASH_PINCTRL_STATE_SLEEP);
+        if (IS_ERR_OR_NULL(fctrl->gpio_state_suspend)) {
+                CAM_ERR(CAM_FLASH,
+                        "Failed to get the flash off state pinctrl handle");
+                return -EINVAL;
+        }
+
+        return 0;
+}
+
+struct gpio_flash_led mgpio_flash_led = {
+        .flash_en = 0,
+        .flash_now = 0,
+};
+#endif
+/* Spes flashlight by muralivijay@github */
+
 static int32_t cam_flash_driver_cmd(struct cam_flash_ctrl *fctrl,
 		void *arg, struct cam_flash_private_soc *soc_private)
 {
@@ -121,8 +166,15 @@ static int32_t cam_flash_driver_cmd(struct cam_flash_ctrl *fctrl,
 			CAM_WARN(CAM_FLASH,
 				"Failed in destroying the device Handle");
 
+#ifdef CONFIG_CAMERA_FLASH_SPES
+		if (fctrl->func_tbl.power_ops) {
+			if (fctrl->func_tbl.power_ops(fctrl, false))
+				CAM_WARN(CAM_FLASH, "Power Down Failed");
+		}
+#else
 		if (fctrl->func_tbl.power_ops(fctrl, false))
 			CAM_WARN(CAM_FLASH, "Power Down Failed");
+#endif
 
 		fctrl->streamoff_count = 0;
 		fctrl->flash_state = CAM_FLASH_STATE_INIT;
@@ -408,6 +460,11 @@ static int32_t cam_flash_platform_probe(struct platform_device *pdev)
 	struct cam_flash_ctrl *fctrl     = NULL;
 	struct device_node *of_parent    = NULL;
 	struct cam_hw_soc_info *soc_info = NULL;
+/* Spes flashlight by muralivijay@github */
+#ifdef CONFIG_CAMERA_FLASH_SPES
+        struct device_node *gnode = pdev->dev.of_node; //store qcom-flash-gpios
+        int pinctrl;
+#endif
 
 	CAM_DBG(CAM_FLASH, "Enter");
 	if (!pdev->dev.of_node) {
@@ -506,9 +563,44 @@ static int32_t cam_flash_platform_probe(struct platform_device *pdev)
 		/* PMIC Flash */
 		fctrl->func_tbl.parser = cam_flash_pmic_pkt_parser;
 		fctrl->func_tbl.apply_setting = cam_flash_pmic_apply_setting;
+#ifdef CONFIG_CAMERA_FLASH_SPES
+		fctrl->func_tbl.power_ops = NULL;
+#else
 		fctrl->func_tbl.power_ops = cam_flash_pmic_power_ops;
+#endif
 		fctrl->func_tbl.flush_req = cam_flash_pmic_flush_request;
 	}
+
+/* Spes flashlight by muralivijay@github */
+#ifdef CONFIG_CAMERA_FLASH_SPES
+                //call pinctrl
+                pinctrl = msm_flash_pinctrl_init(fctrl);
+                if (pinctrl == 0) {
+                CAM_INFO(CAM_FLASH, "camera flash pinctrl successfully returned with 0", pinctrl);
+        } else {
+                CAM_ERR(CAM_FLASH, "camera flash pinctrl read fail");
+
+        }
+
+                // Get flash_en GPIO
+                /*Xiaomi added tlmm 85 pin in dts but not used on flashlight */
+                mgpio_flash_led.flash_en = of_get_named_gpio(gnode, "qcom,flash-gpios", 0);
+                if (!gpio_is_valid(mgpio_flash_led.flash_en)) {
+                // Handle error if GPIO is not valid
+                CAM_ERR(CAM_FLASH, "Invalid GPIO for flash_en");
+               }
+                CAM_INFO(CAM_FLASH, "flash_en GPIO: %d", mgpio_flash_led.flash_en);
+
+                // Get flash_now GPIO
+                /*Xiaomi added pm6125_gpios 2 pin in dts  mainly used on flashlight */
+                mgpio_flash_led.flash_now = of_get_named_gpio(gnode, "qcom,flash-gpios", 1);
+                if (!gpio_is_valid(mgpio_flash_led.flash_now)) {
+                // Handle error if GPIO is not valid
+                CAM_ERR(CAM_FLASH, "Invalid GPIO for flash_en");
+               }
+                CAM_INFO(CAM_FLASH, "flash_now GPIO: %d", mgpio_flash_led.flash_now);
+#endif
+/* Spes flashlight by muralivijay@github */
 
 	rc = cam_flash_init_subdev(fctrl);
 	if (rc) {

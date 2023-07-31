@@ -1,3 +1,4 @@
+
 // SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2017-2021, The Linux Foundation. All rights reserved.
@@ -506,6 +507,11 @@ static int cam_flash_ops(struct cam_flash_ctrl *flash_ctrl,
 int cam_flash_off(struct cam_flash_ctrl *flash_ctrl)
 {
 	int rc = 0;
+/* Spes flashlight by muralivijay@github */
+#ifdef CONFIG_CAMERA_FLASH_SPES
+	struct cam_hw_soc_info  soc_info = flash_ctrl->soc_info;
+        extern struct gpio_flash_led mgpio_flash_led;
+#endif
 
 	if (!flash_ctrl) {
 		CAM_ERR(CAM_FLASH, "Flash control Null");
@@ -529,6 +535,12 @@ int cam_flash_off(struct cam_flash_ctrl *flash_ctrl)
 		flash_ctrl->flash_state = CAM_FLASH_STATE_CONFIG;
 	}
 
+/* Spes flashlight by muralivijay@github */
+#ifdef CONFIG_CAMERA_FLASH_SPES
+	cam_res_mgr_gpio_set_value(mgpio_flash_led.flash_now, 0);
+	cam_res_mgr_gpio_free(soc_info.dev, mgpio_flash_led.flash_now);
+        CAM_INFO(CAM_FLASH, "Flash off Triggered flash_now %d with value 0", mgpio_flash_led.flash_now);
+#endif
 	return 0;
 }
 
@@ -537,6 +549,11 @@ static int cam_flash_low(
 	struct cam_flash_frame_setting *flash_data)
 {
 	int i = 0, rc = 0;
+/* Spes flashlight by muralivijay@github */
+#ifdef CONFIG_CAMERA_FLASH_SPES
+	struct cam_hw_soc_info  soc_info = flash_ctrl->soc_info;
+        extern struct gpio_flash_led mgpio_flash_led;
+#endif
 
 	if (!flash_data) {
 		CAM_ERR(CAM_FLASH, "Flash Data Null");
@@ -553,6 +570,18 @@ static int cam_flash_low(
 		CAMERA_SENSOR_FLASH_OP_FIRELOW);
 	if (rc)
 		CAM_ERR(CAM_FLASH, "Fire Torch failed: %d", rc);
+
+/* Spes flashlight by muralivijay@github */
+#ifdef CONFIG_CAMERA_FLASH_SPES
+	CAM_INFO(CAM_FLASH, "Flash low Triggered flash_now %d with value 1", mgpio_flash_led.flash_now);
+	rc = cam_res_mgr_gpio_request(soc_info.dev, mgpio_flash_led.flash_now, 0, "CUSTOM_GPIO1");
+	if(rc) {
+		CAM_ERR(CAM_FLASH, "gpio %d request fails", rc);
+		return rc;
+	}
+
+	cam_res_mgr_gpio_set_value(mgpio_flash_led.flash_now, 1);
+#endif
 
 	return rc;
 }
@@ -1217,12 +1246,23 @@ int cam_flash_i2c_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg)
 			return rc;
 		}
 
+#ifdef CONFIG_CAMERA_FLASH_SPES
+		if (fctrl->func_tbl.power_ops) {
+			rc = fctrl->func_tbl.power_ops(fctrl, true);
+			if (rc) {
+				CAM_ERR(CAM_FLASH,
+					"Enable Regulator Failed rc = %d", rc);
+				return rc;
+			}
+		}
+#else
 		rc = fctrl->func_tbl.power_ops(fctrl, true);
 		if (rc) {
 			CAM_ERR(CAM_FLASH,
 				"Enable Regulator Failed rc = %d", rc);
 			return rc;
 		}
+#endif
 
 		rc = fctrl->func_tbl.apply_setting(fctrl, 0);
 		if (rc) {
@@ -1499,12 +1539,23 @@ int cam_flash_pmic_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg)
 			fctrl->nrt_info.cmn_attr.cmd_type =
 				CAMERA_SENSOR_FLASH_CMD_TYPE_INIT_INFO;
 
+#ifdef CONFIG_CAMERA_FLASH_SPES
+			if (fctrl->func_tbl.power_ops) {
+				rc = fctrl->func_tbl.power_ops(fctrl, true);
+				if (rc) {
+					CAM_ERR(CAM_FLASH,
+						"Enable Regulator Failed rc = %d", rc);
+					return rc;
+				}
+			}
+#else
 			rc = fctrl->func_tbl.power_ops(fctrl, true);
 			if (rc) {
 				CAM_ERR(CAM_FLASH,
 					"Enable Regulator Failed rc = %d", rc);
 				return rc;
 			}
+#endif
 
 			fctrl->flash_state =
 				CAM_FLASH_STATE_CONFIG;
@@ -1934,10 +1985,19 @@ void cam_flash_shutdown(struct cam_flash_ctrl *fctrl)
 					"LED OFF FAILED: %d",
 					rc);
 		}
+#ifdef CONFIG_CAMERA_FLASH_SPES
+		if (fctrl->func_tbl.power_ops) {
+			rc = fctrl->func_tbl.power_ops(fctrl, false);
+			if (rc)
+				CAM_ERR(CAM_FLASH, "Power Down Failed rc: %d",
+					rc);
+		}
+#else
 		rc = fctrl->func_tbl.power_ops(fctrl, false);
 		if (rc)
 			CAM_ERR(CAM_FLASH, "Power Down Failed rc: %d",
 				rc);
+#endif
 	}
 
 	rc = cam_flash_release_dev(fctrl);

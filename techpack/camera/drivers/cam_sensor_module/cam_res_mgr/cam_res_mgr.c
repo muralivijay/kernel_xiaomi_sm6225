@@ -477,7 +477,11 @@ int cam_res_mgr_gpio_request(struct device *dev, uint gpio,
 }
 EXPORT_SYMBOL(cam_res_mgr_gpio_request);
 
+#ifdef CONFIG_CAMERA_FLASH_SPES
+void cam_res_mgr_gpio_free(struct device *dev, uint gpio)
+#else
 static void cam_res_mgr_gpio_free(struct device *dev, uint gpio)
+#endif
 {
 	bool found = false;
 	bool need_free = true;
@@ -535,6 +539,9 @@ static void cam_res_mgr_gpio_free(struct device *dev, uint gpio)
 	if (need_free)
 		gpio_free(gpio);
 }
+#ifdef CONFIG_CAMERA_FLASH_SPES
+EXPORT_SYMBOL(cam_res_mgr_gpio_free);
+#endif
 
 void cam_res_mgr_gpio_free_arry(struct device *dev,
 		const struct gpio *array, size_t num)

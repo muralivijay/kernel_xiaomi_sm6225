@@ -29,7 +29,6 @@ static int32_t cam_get_source_node_info(
 		CAM_ERR(CAM_FLASH, "flash-type read failed rc=%d", rc);
 		soc_private->flash_type = CAM_FLASH_TYPE_PMIC;
 	}
-
 	switch_src_node = of_parse_phandle(of_node, "switch-source", 0);
 	if (!switch_src_node) {
 		CAM_WARN(CAM_FLASH, "switch_src_node NULL");
