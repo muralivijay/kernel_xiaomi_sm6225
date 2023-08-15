@@ -1889,6 +1889,10 @@ const char *cmd_set_prop_map[DSI_CMD_SET_MAX] = {
 #ifdef CONFIG_TARGET_PROJECT_K7T
 	"qcom,mdss-dsi-doze-hbm-command",
 	"qcom,mdss-dsi-doze-lbm-command",
+	"qcom,mdss-dsi-dispparam-hbm-on-command",
+	"qcom,mdss-dsi-dispparam-hbm-off-command",
+	"qcom,mdss-dsi-hbm1-on-command",
+	"qcom,mdss-dsi-hbm2-on-command",
 #endif
 };
 
@@ -1919,6 +1923,10 @@ const char *cmd_set_state_map[DSI_CMD_SET_MAX] = {
 #ifdef CONFIG_TARGET_PROJECT_K7T
 	"qcom,mdss-dsi-doze-hbm-command-state",
 	"qcom,mdss-dsi-doze-lbm-command-state",
+	"qcom,mdss-dsi-dispparam-hbm-on-command-state",
+	"qcom,mdss-dsi-dispparam-hbm-off-command-state",
+	"qcom,mdss-dsi-hbm1-on-command-state",
+	"qcom,mdss-dsi-hbm2-on-command-state",
 #endif
 };
 
