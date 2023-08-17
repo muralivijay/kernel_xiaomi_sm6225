@@ -538,8 +538,10 @@ int cam_flash_off(struct cam_flash_ctrl *flash_ctrl)
 /* Spes flashlight by muralivijay@github */
 #ifdef CONFIG_CAMERA_FLASH_SPES
 	cam_res_mgr_gpio_set_value(mgpio_flash_led.flash_now, 0);
+	cam_res_mgr_gpio_set_value(mgpio_flash_led.flash_en, 0);
 	cam_res_mgr_gpio_free(soc_info.dev, mgpio_flash_led.flash_now);
-        CAM_INFO(CAM_FLASH, "Flash off Triggered flash_now %d with value 0", mgpio_flash_led.flash_now);
+	cam_res_mgr_gpio_free(soc_info.dev, mgpio_flash_led.flash_en);
+	CAM_INFO(CAM_FLASH, "Flash off Triggered flash_now %d with value 0 and flash_en %d with value 0", mgpio_flash_led.flash_now, mgpio_flash_led.flash_en);
 #endif
 	return 0;
 }
@@ -591,6 +593,11 @@ static int cam_flash_high(
 	struct cam_flash_frame_setting *flash_data)
 {
 	int i = 0, rc = 0;
+/* Spes flashlight by muralivijay@github */
+#ifdef CONFIG_CAMERA_FLASH_SPES
+	struct cam_hw_soc_info  soc_info = flash_ctrl->soc_info;
+        extern struct gpio_flash_led mgpio_flash_led;
+#endif
 
 	if (!flash_data) {
 		CAM_ERR(CAM_FLASH, "Flash Data Null");
@@ -607,6 +614,17 @@ static int cam_flash_high(
 		CAMERA_SENSOR_FLASH_OP_FIREHIGH);
 	if (rc)
 		CAM_ERR(CAM_FLASH, "Fire Flash Failed: %d", rc);
+
+#ifdef CONFIG_CAMERA_FLASH_SPES
+	CAM_INFO(CAM_FLASH, "Flash high Triggered flash_en %d with value 1", mgpio_flash_led.flash_en);
+	rc = cam_res_mgr_gpio_request(soc_info.dev, mgpio_flash_led.flash_en, 0, "CUSTOM_GPIO1");
+	if(rc) {
+		CAM_ERR(CAM_FLASH, "gpio %d request fails", rc);
+		return rc;
+	}
+
+	cam_res_mgr_gpio_set_value(mgpio_flash_led.flash_en, 1);
+#endif
 
 	return rc;
 }
