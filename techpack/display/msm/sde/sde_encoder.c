@@ -39,6 +39,8 @@
 #include "sde_core_irq.h"
 #include "sde_hw_top.h"
 #include "sde_hw_qdss.h"
+#include "dsi_panel.h"
+#include "dsi_display.h"
 
 #define SDE_DEBUG_ENC(e, fmt, ...) SDE_DEBUG("enc%d " fmt,\
 		(e) ? (e)->base.base.id : -1, ##__VA_ARGS__)
@@ -4984,6 +4986,8 @@ void sde_encoder_kickoff(struct drm_encoder *drm_enc, bool is_error)
 	struct sde_encoder_phys *phys;
 	ktime_t wakeup_time;
 	unsigned int i;
+	struct sde_connector *sde_conn;
+	struct dsi_display *display;
 
 	if (!drm_enc) {
 		SDE_ERROR("invalid encoder\n");
@@ -4992,11 +4996,24 @@ void sde_encoder_kickoff(struct drm_encoder *drm_enc, bool is_error)
 	SDE_ATRACE_BEGIN("encoder_kickoff");
 	sde_enc = to_sde_encoder_virt(drm_enc);
 
+	sde_conn = to_sde_connector(sde_enc->cur_master->connector);
+        if (!sde_conn)
+		SDE_ERROR("fps sde_encoder_kickoff sde_conn is null\n");
+	display = sde_conn->display;
+        if (!display)
+		SDE_ERROR("fps sde_encoder_kickoff display is null\n");
+
 	SDE_DEBUG_ENC(sde_enc, "\n");
 
 	/* create a 'no pipes' commit to release buffers on errors */
 	if (is_error)
 		_sde_encoder_reset_ctl_hw(drm_enc);
+
+	if (display->panel->panel_initialized &&
+			display->panel->cur_mode->timing.refresh_rate == 60 &&
+			(display->panel->dsi_refresh_flag == 90)) {
+		dsi_set_backlight_control(display->panel, display->panel->cur_mode);
+	}
 
 	/* All phys encs are ready to go, trigger the kickoff */
 	_sde_encoder_kickoff_phys(sde_enc);

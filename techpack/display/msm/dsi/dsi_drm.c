@@ -246,6 +246,12 @@ static void dsi_bridge_enable(struct drm_bridge *bridge)
 		return;
 	}
 
+//	if (c_bridge->display->panel->panel_initialized &&
+//			c_bridge->display->panel->cur_mode->timing.refresh_rate == 60 &&
+//			(c_bridge->display->panel->dsi_refresh_flag == 90)) {
+//		dsi_set_backlight_control(c_bridge->display->panel, c_bridge->display->panel->cur_mode);
+//	}
+
 	if (c_bridge->dsi_mode.dsi_mode_flags &
 			(DSI_MODE_FLAG_SEAMLESS | DSI_MODE_FLAG_VRR |
 			 DSI_MODE_FLAG_DYN_CLK)) {
