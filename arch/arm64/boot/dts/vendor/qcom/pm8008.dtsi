@@ -28,6 +28,7 @@ pm8008_8: qcom,pm8008@8 {
 	};
 
 	pm8008_gpios: pinctrl@c000 {
+		status = "disable";
 		compatible = "qcom,spmi-gpio";
 		reg = <0xc000 0x200>;
 		interrupts = <0xc0 0 IRQ_TYPE_EDGE_RISING>,
@@ -48,6 +49,7 @@ pm8008_8: qcom,pm8008@8 {
 };
 
 pm8008_9: qcom,pm8008@9 {
+	status = "disable";
 	compatible = "qcom,i2c-pmic";
 	reg = <0x9>;
 	#address-cells = <1>;
@@ -57,6 +59,7 @@ pm8008_9: qcom,pm8008@9 {
 	pinctrl-0 = <&pm8008_gpio1_active>;
 
 	pm8008_regulators: qcom,pm8008-regulator {
+		status = "disable";
 		compatible = "qcom,pm8008-regulator";
 		pm8008_en-supply = <&PM8008_EN>;
 		qcom,enable-ocp-broadcast;

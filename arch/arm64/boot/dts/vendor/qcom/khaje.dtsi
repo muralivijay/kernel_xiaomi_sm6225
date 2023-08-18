@@ -21,7 +21,7 @@
 / {
 	model = "Qualcomm Technologies, Inc. Khaje SoC";
 	compatible = "qcom,khaje";
-	qcom,msm-id = <518 0x10000>, <586 0x10000>;
+	qcom,msm-id = <518 0x10000>;
 	interrupt-parent = <&wakegic>;
 
 	#address-cells = <2>;
@@ -42,6 +42,7 @@
 		swr0 = &swr0;
 		swr1 = &swr1;
 		ufshc1 = &ufshc_mem; /* Embedded UFS slot */
+		spi0 = &qupv3_se0_spi;
 	};
 
 	cpus {
@@ -267,7 +268,7 @@
 			compatible = "android,firmware";
 			vbmeta {
 				compatible="android,vbmeta";
-				parts = "vbmeta,boot,system,vendor,dtbo,recovery";
+				parts = "vbmeta,boot,system,vendor,dtbo";
 			};
 
 			fstab {
@@ -346,25 +347,25 @@
 		pil_adsp_mem: pil_adsp_region@53800000 {
 			compatible = "removed-dma-pool";
 			no-map;
-			reg = <0x0 0x53800000 0x0 0x1e00000>;
+			reg = <0x0 0x53800000 0x0 0x2e00000>;
 		};
 
-		pil_ipa_fw_mem: ipa_fw_region@55600000 {
+		pil_ipa_fw_mem: ipa_fw_region@56600000 {
 			compatible = "removed-dma-pool";
 			no-map;
-			reg = <0x0 0x55600000 0x0 0x10000>;
+			reg = <0x0 0x56600000 0x0 0x10000>;
 		};
 
-		pil_ipa_gsi_mem: ipa_gsi_region@55610000 {
+		pil_ipa_gsi_mem: ipa_gsi_region@56610000 {
 			compatible = "removed-dma-pool";
 			no-map;
-			reg = <0x0 0x55610000 0x0 0x5000>;
+			reg = <0x0 0x56610000 0x0 0x5000>;
 		};
 
-		pil_gpu_mem: gpu_region@55615000 {
+		pil_gpu_mem: gpu_region@56615000 {
 			compatible = "removed-dma-pool";
 			no-map;
-			reg = <0x0 0x55615000 0x0 0x2000>;
+			reg = <0x00 0x56615000 0x00 0x2000>;
 		};
 
 		user_contig_mem: user_contig_region {
@@ -443,6 +444,15 @@
 			alignment = <0x0 0x400000>;
 			size = <0x0 0x2000000>;
 			linux,cma-default;
+		};
+
+		/* Pstore ramoops */
+        ramoops_mem:ramoops@5D000000 {
+			compatible = "ramoops";
+			reg = <0x00 0x5d000000 0x00 0x400000>;
+			record-size = <0x80000>;
+			pmsg-size = <0x200000>;
+			console-size = <0x100000>;
 		};
 	};
 
@@ -561,6 +571,12 @@
 		qcom,coresight-jtagmm-cpu = <&CPU7>;
 	};
 
+    sn_fuse:snfuse@0x01B46134 {
+		compatible = "qcom,sn-fuse";
+		reg = <0x1b46134 0x04 0x1b4607c 0x04>;
+		reg-names = "sn-base", "fuse-state";
+	};
+
 	qcom,memshare {
 		compatible = "qcom,memshare";
 
@@ -616,7 +632,7 @@
 		interrupts-extended = <&wakegic GIC_SPI 197
 						IRQ_TYPE_EDGE_RISING>;
 		reg = <0x45f01b8 0x1000>,
-			<0xf111008 0x4>;  /* MSM_APCS_GCC_BASE 4K */
+			<0xf011008 0x4>;  /* MSM_APCS_GCC_BASE 4K */
 		reg-names = "vmpm", "ipc";
 		qcom,num-mpm-irqs = <96>;
 		interrupt-controller;
@@ -1941,7 +1957,7 @@
 		reg-names = "wdt-base";
 		interrupts = <GIC_SPI 3 IRQ_TYPE_EDGE_RISING>,
 			     <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>;
-		qcom,bark-time = <11000>;
+		qcom,bark-time = <15000>;
 		qcom,pet-time = <9360>;
 		qcom,ipi-ping;
 		qcom,wakeup-enable;
@@ -1957,7 +1973,6 @@
 	qcom,chd_silver {
 		compatible = "qcom,core-hang-detect";
 		label = "silver";
-		cluster-id = <0>;
 		qcom,threshold-arr = <0x0f1880b0 0x0f1980b0
 				      0x0f1a80b0 0x0f1b80b0>;
 		qcom,config-arr = <0x0f1880b8 0x0f1980b8
@@ -1967,7 +1982,6 @@
 	qcom,chd_gold {
 		compatible = "qcom,core-hang-detect";
 		label = "gold";
-		cluster-id = <1>;
 		qcom,threshold-arr = <0x0f0880b0 0x0f0980b0
 				      0x0f0a80b0 0x0f0b80b0>;
 		qcom,config-arr = <0x0f0880b8 0x0f0980b8
@@ -2446,7 +2460,8 @@
 
 		lanes-per-direction = <2>;
 		dev-ref-clk-freq = <0>; /* 19.2 MHz */
-		spm-level = <5>;
+		spm-level = <3>;
+		rpm-level = <3>;
 
 		clock-names =
 			"core_clk",
@@ -2592,7 +2607,7 @@
 
 	qcom,rmtfs_sharedmem@0 {
 		compatible = "qcom,sharedmem-uio";
-		reg = <0x0 0x200000>;
+		reg = <0x0 0x300000>;
 		reg-names = "rmtfs";
 		qcom,client-id = <0x00000001>;
 		qcom,guard-memory;
@@ -3971,13 +3986,13 @@ tpdm_turing_llm: tpdm@8861000 {
 
 			qcom,speed-bin = <0>;
 
-			qcom,initial-pwrlevel = <6>;
-			qcom,ca-target-pwrlevel = <5>;
+			qcom,initial-pwrlevel = <5>;
+			qcom,ca-target-pwrlevel = <4>;
 
-			/* TURBO_L1 */
+			/* TURBO */
 			qcom,gpu-pwrlevel@0 {
 				reg = <0>;
-				qcom,gpu-freq = <1260000000>;
+				qcom,gpu-freq = <1114800000>;
 				qcom,bus-freq = <7>;
 				qcom,bus-min = <7>;
 				qcom,bus-max = <7>;
@@ -3986,15 +4001,6 @@ tpdm_turing_llm: tpdm@8861000 {
 			/* TURBO_L1 */
 			qcom,gpu-pwrlevel@1 {
 				reg = <1>;
-				qcom,gpu-freq = <1114800000>;
-				qcom,bus-freq = <7>;
-				qcom,bus-min = <7>;
-				qcom,bus-max = <7>;
-			};
-
-			/* TURBO */
-			qcom,gpu-pwrlevel@2 {
-				reg = <2>;
 				qcom,gpu-freq = <1025000000>;
 				qcom,bus-freq = <6>;
 				qcom,bus-min = <5>;
@@ -4002,8 +4008,8 @@ tpdm_turing_llm: tpdm@8861000 {
 			};
 
 			/* NOM */
-			qcom,gpu-pwrlevel@3 {
-				reg = <3>;
+			qcom,gpu-pwrlevel@2 {
+				reg = <2>;
 				qcom,gpu-freq = <785000000>;
 				qcom,bus-freq = <5>;
 				qcom,bus-min = <4>;
@@ -4011,8 +4017,8 @@ tpdm_turing_llm: tpdm@8861000 {
 			};
 
 			/* SVS_L1 */
-			qcom,gpu-pwrlevel@4 {
-				reg = <4>;
+			qcom,gpu-pwrlevel@3 {
+				reg = <3>;
 				qcom,gpu-freq = <600000000>;
 				qcom,bus-freq = <4>;
 				qcom,bus-min = <3>;
@@ -4020,8 +4026,8 @@ tpdm_turing_llm: tpdm@8861000 {
 			};
 
 			/* SVS */
-			qcom,gpu-pwrlevel@5 {
-				reg = <5>;
+			qcom,gpu-pwrlevel@4 {
+				reg = <4>;
 				qcom,gpu-freq = <465000000>;
 				qcom,bus-freq = <3>;
 				qcom,bus-min = <2>;
@@ -4029,8 +4035,8 @@ tpdm_turing_llm: tpdm@8861000 {
 			};
 
 			/* LOW SVS */
-			qcom,gpu-pwrlevel@6 {
-				reg = <6>;
+			qcom,gpu-pwrlevel@5 {
+				reg = <5>;
 				qcom,gpu-freq = <320000000>;
 				qcom,bus-freq = <2>;
 				qcom,bus-min = <1>;
@@ -4038,8 +4044,8 @@ tpdm_turing_llm: tpdm@8861000 {
 			};
 
 			/* XO */
-			qcom,gpu-pwrlevel@7 {
-				reg = <7>;
+			qcom,gpu-pwrlevel@6 {
+				reg = <6>;
 				qcom,gpu-freq = <0>;
 				qcom,bus-freq = <0>;
 				qcom,bus-min = <0>;
@@ -4200,6 +4206,8 @@ tpdm_turing_llm: tpdm@8861000 {
 	interrupt-parent = <&tlmm>;
 	interrupts = <25 IRQ_TYPE_EDGE_RISING>;
 
+	status = "disable";
+	reg = <0x88>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pm8008_active &pm8008_interrupt>;
 };
@@ -4313,6 +4321,18 @@ tpdm_turing_llm: tpdm@8861000 {
 		};
 	};
 
+	disp_lcd_bias_en {
+	disp_lcd_bias_en_default:
+		disp_lcd_bias_en_default {
+			pins = "gpio9";
+			function = "func1";
+			input-disable;
+			output-enable;
+			bias-disable;
+			power-source = <0>;
+			qcom,drive-strength = <2>;
+		};
+	};
 };
 
 &spmi_bus {

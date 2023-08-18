@@ -176,6 +176,7 @@
 	};
 };
 
+
 &qupv3_se1_i2c {
 	status = "ok";
 	fsa4480: fsa4480@42 {

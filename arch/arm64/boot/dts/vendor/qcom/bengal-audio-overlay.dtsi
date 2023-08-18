@@ -141,9 +141,9 @@
 		qcom,cdc-vdd-buck-voltage = <1800000 1800000>;
 		qcom,cdc-vdd-buck-current = <650000>;
 
-		qcom,cdc-micbias1-mv = <1800>;
-		qcom,cdc-micbias2-mv = <1800>;
-		qcom,cdc-micbias3-mv = <1800>;
+		qcom,cdc-micbias1-mv = <2700>;
+		qcom,cdc-micbias2-mv = <2700>;
+		qcom,cdc-micbias3-mv = <2700>;
 
 		qcom,cdc-static-supplies = "cdc-vdd-rxtx",
 					   "cdc-vddpx";
@@ -234,8 +234,8 @@
 
 	asoc-codec  = <&stub_codec>, <&bolero>;
 	asoc-codec-names = "msm-stub-codec.1", "bolero_codec";
-	qcom,wsa-max-devs = <1>;
-	qcom,wsa-devs = <&wsa881x_i2c_e>;
+	qcom,wsa-max-devs = <0>;
+	qcom,wsa-devs = <0>;
 	qcom,wsa-aux-dev-prefix = "SpkrMono";
 	qcom,codec-max-aux-devs = <1>;
 	qcom,codec-aux-devs = <&wcd937x_codec>;
@@ -251,11 +251,34 @@
 		clocks = <&wsa881x_analog_clk 0>;
 		qcom,wsa-analog-clk-gpio = <&wsa881x_analog_clk_gpio>;
 		qcom,wsa-analog-reset-gpio = <&wsa881x_analog_reset_gpio>;
+                status = "disable";
 	};
 
 	wsa881x_i2c_44: wsa881x-i2c-codec@44 {
 		compatible = "qcom,wsa881x-i2c-codec";
 		reg = <0x044>;
+	        status = "disable";
+	};
+
+fsa4480:
+	fsa4480@42 {
+		status = "disable";
+	};
+
+	aw87xxx_pa_5B@5B {
+		compatible = "awinic,aw87xxx_pa";
+		reg = <0x5b>;		
+		reset-gpio = <&tlmm 35 0>;
+		dev_index = <0>;		
+		status = "okay";
+	};
+
+	aw87xxx_pa_58@58 {
+		compatible = "awinic,aw87xxx_pa";
+		reg = <0x58>;
+		reset-gpio = <&tlmm 106 0>;
+		dev_index = <1>;		
+		status = "okay";
 	};
 };
 
@@ -274,12 +297,19 @@
 		pinctrl-1 = <&spkr_1_sd_n_sleep>;
 	};
 
+	aw87xxx_pa_reset_gpio {
+		compatible = "longcheer,lct_pinctrl";
+		audio-reset-pin = <&wsa881x_analog_reset_gpio>;
+		status = "okay";
+	};
+
 	wsa881x_analog_clk: wsa_ana_clk {
 		compatible = "qcom,audio-ref-clk";
 		qcom,codec-ext-clk-src = <AUDIO_LPASS_MCLK_2>;
 		qcom,codec-lpass-ext-clk-freq = <9600000>;
 		qcom,codec-lpass-clk-id = <0x301>;
 		#clock-cells = <1>;
+	        status = "disable";
 	};
 
 	clock_audio_rx_1: rx_core_clk {

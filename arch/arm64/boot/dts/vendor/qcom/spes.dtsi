@@ -1,0 +1,308 @@
+#include "khaje-idp.dtsi"
+
+/*&dsi_td4330_truly_v2_video {
+	/delete-property/ qcom,esd-check-enabled;
+};
+
+&dsi_td4330_truly_v2_cmd {
+	/delete-property/ qcom,esd-check-enabled;
+};
+
+&dsi_nt36672e_fhd_plus_90hz_video {
+	/delete-property/ qcom,esd-check-enabled;
+}; */
+
+&qupv3_se2_i2c {
+	synaptics_tcm@20 {
+		status = "disabled";
+	};
+
+	novatek@62 {
+		status = "disabled";
+	};
+};
+
+///device specific-prop
+&qupv3_se4_2uart {
+      status = "ok";
+};
+
+&tlmm {
+/* Max77729 */
+	max_int_default:max_int_default {
+		mux {
+			pins = "gpio105";		
+			function = "gpio";
+		};
+				
+		config {
+			pins = "gpio105";
+			bias-disable;
+			input-enable;
+		};
+	};
+
+	maxim_int_active {
+	max_int_active:max_int_active {
+			mux {
+				pins = "gpio105";
+				function = "gpio";
+			};	
+	
+			config {
+				pins = "gpio105";
+				drive-strength = <8>;
+				bias-disable;
+				input-enable;
+			};
+		};
+	};
+
+	maxim_int_suspend {
+	max_int_suspend:max_int_suspend {
+			mux {
+				pins = "gpio105";			
+				function = "gpio";
+			};
+			
+			config {
+				pins = "gpio105";
+				drive-strength = <2>;
+				bias-disable;
+				input-enable;
+			};
+		};
+	};
+};
+
+&qupv3_se1_i2c {
+			status = "ok";
+muic:
+	max77729@66 {
+		status = "okay";
+		compatible = "maxim,max77729";
+		reg = <0x66>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <0x69 0x08>;
+		pinctrl-names = "maxim_int_default";
+		pinctrl-0 = <&max_int_default>;
+		max77729,irq-gpio = <&tlmm 105 8>;
+		max77729,wakeup;
+		max77729,fw_product_id = <3>;
+		max77729,bc1p2_retry_count = <2>;
+		max77729,snkcap_data = [04 2c 91 01 36 c8 d0 02 00 c8 90 41 8b 2f 21 dc c0];
+		
+		max77729-usbc {
+			compatible = "maxim,max77729-usbc";
+		};
+
+		battery {
+			battery,chg_float_voltage = <4450>;
+			battery,chg_ocp_current = <5800>;
+			battery,chg_ocp_dtc = <6>;
+			battery,topoff_time = <30>;
+		};
+
+		max77729-charger {
+			charger,fac_vsys = <4400>;
+			charger,enable_sysovlo_irq;
+			charger,fsw = <0>;
+		};
+
+		max77729-fuelgauge {
+			fuelgauge,fuel_alert_soc = <1>;
+			fuelgauge,capacity_max = <2000>;
+			fuelgauge,capacity_max_margin = <300>;
+			fuelgauge,capacity_min = <0>;
+			fuelgauge,capacity_calculation_type = <92>;
+			fuelgauge,repeated_fuelalert;
+			fuelgauge,using_temp_compensation;
+			fuelgauge,low_temp_limit = <100>;
+			fuelgauge,vempty_recover_time = <180>;
+			fuelgauge,sw_v_empty_voltage = <3200>;
+			fuelgauge,sw_v_empty_voltage_cisd = <3100>;
+			fuelgauge,sw_v_empty_recover_voltage = <3480>;
+			fuelgauge,fg_resistor = <2>;
+			fuelgauge,lost_soc_trig_soc = <1000>;
+			fuelgauge,lost_soc_trig_d_soc = <20>;
+			fuelgauge,lost_soc_trig_scale = <2>;
+			fuelgauge,lost_soc_guarantee_soc = <30>;
+			fuelgauge,lost_soc_min_vol = <3200>;
+			battery,shutdown-delay-enable;
+			fuelgauge,soc_decimal_rate = <0 38
+				10 35 
+				20 33 
+				30 33 
+				40 33 
+				50 33
+				60 33 
+				70 30 
+				80 25 
+				90 20 
+				95 10>;
+
+			battery_params {
+				battery1,v_empty = <43620>;
+				battery1,v_empty_origin = <43620>;
+				battery1,capacity = <1989>;
+				battery2,v_empty = <43620>;
+				battery2,v_empty_origin = <43620>;
+				battery2,capacity = <1978>;
+				battery1,data_ver = <1>;
+				battery2,data_ver = <1>;
+				battery1,battery_model = <0xa9f0 0xb6d0 0xb850 0xba60 0xbbb0 0xbd30 0xbe60 0xbf90 0xc270 0xc5c0 0xc930 0xcc10 0xcfb0 0xd650 0xd9a0 0xdd00 0x160 0x1030 0xd00 0x1100 0x1410 0x1520 0x1510 0xdb0 0x7c0 0x750 0x7c0 0x6d0 0x6c0 0x6f0 0x6d0 0x6d0 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200>;
+				battery2,battery_model = <0xaa00 0xb6e0 0xb870 0xba00 0xbbc0 0xbe00 0xbf30 0xc060 0xc2a0 0xc580 0xc8c0 0xce60 0xd250 0xd6c0 0xd960 0xdd10 0x190 0xe00 0xf00 0xe10 0x1400 0x1700 0x1120 0xce0 0x790 0x7d0 0x6f0 0x6d0 0x670 0x7f0 0x6f0 0x6f0 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200 0x200>;
+				battery1,selected_reg = <0x24 0x1403 0x25 0x1e05 0x2f 0x01 0x05 0x00 0x36 0x637 0x2a 0x23c 0x60 0x80 0x28 0x2606 0x1d 0x210 0xbb 0x50 0x13 0x5a00 0x35 0x7c4 0x18 0x7c5 0x45 0x1f1 0x46 0x3200 0x23 0x7c4 0x10 0x7ba 0x3a 0xaa64 0x12 0x3e00 0x22 0x1f80 0x32 0x1000 0x42 0xc80 0x38 0x2c 0x39 0x151f 0x29 0xcea4 0x1e 0x100 0x2c 0xed8a 0x2d 0x1e87 0xb9 0x10 0xdb 0x8400 0x2b 0x3870 0x60 0x80 0x04 0x1900 0xb6 0x5cb 0xb7 0x600 0x49 0x20c1 0x60 0x00>;
+				battery2,selected_reg = <0x24 0x1403 0x25 0x1e05 0x2f 0x01 0x05 0x00 0x36 0x62e 0x2a 0x23c 0x60 0x80 0x28 0x2606 0x1d 0x210 0xbb 0x50 0x13 0x5a00 0x35 0x7ba 0x18 0x7ba 0x45 0x1ee 0x46 0x3200 0x23 0x7ba 0x10 0x7ba 0x3a 0xaa64 0x12 0x3e00 0x22 0x1f80 0x32 0x1000 0x42 0xd00 0x38 0x2c 0x39 0x161d 0x29 0xcea4 0x1e 0x100 0x2c 0xed8a 0x2d 0x1e87 0xb9 0x10 0xdb 0x8400 0x2b 0x3870 0x60 0x80 0x04 0x1900 0xb6 0x5cb 0xb7 0x600 0x49 0x20c1 0x60 0x00>;
+			};
+		};
+	};
+
+};
+
+&usb0 {
+    extcon = <&muic &eud>;
+};
+
+&tlmm {
+/* sc8551-charger */
+	sc8551_int_default: sc8551_int_default {
+			mux {
+				pins = "gpio84";
+				function = "gpio";
+			};
+			
+			config {
+				pins = "gpio84";
+				drive-strength = <2>;
+				bias-pull-up;
+				input-enable;
+			};
+		};
+};
+
+&qupv3_se1_i2c {
+			status = "ok";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+	sc8551-charger@65 {
+		compatible = "sc,sc8551-standalone";
+		reg = <0x65>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <84 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&sc8551_int_default>;
+		sc,sc8551,bat-therm-disable = <0>;
+		sc,sc8551,bus-therm-disable = <0>;
+		sc,sc8551,bat-ovp-threshold = <4525>;
+		sc,sc8551,bat-ovp-alarm-threshold = <4400>;
+		sc,sc8551,bat-ocp-threshold = <8000>;
+		sc,sc8551,bat-ocp-alarm-threshold = <7500>;
+		sc,sc8551,bus-ovp-threshold = <12000>;
+		sc,sc8551,bus-ovp-alarm-threshold = <11000>;
+		sc,sc8551,bus-ocp-threshold = <3750>;
+		sc,sc8551,bus-ocp-alarm-threshold = <3500>;
+		sc,sc8551,bat-ucp-alarm-threshold = <2000>;
+		sc,sc8551,bat-therm-threshold = <21>;
+		sc,sc8551,bus-therm-threshold = <21>;
+		sc,sc8551,die-therm-threshold = <125>;
+		sc,sc8551,ac-ovp-threshold = <17>;
+		sc,sc8551,sense-resistor-mohm = <5>;
+	};
+};
+
+&soc {
+nopmi_chg:
+        qcom,nopmi-chg {
+		compatible = "qcom,nopmi-chg";
+		status = "okay";
+		qcom,fv-max-uv = <4400000>;
+		enable_sw_jeita;
+		jeita_temp_above_t4_cv = <4100>;
+		jeita_temp_t3_to_t4_cv = <4100>;
+		jeita_temp_t2_to_t3_cv = <4450>;
+		jeita_temp_t1p5_to_t2_cv = <4450>;
+		jeita_temp_t1_to_t1p5_cv = <4450>;
+		jeita_temp_t0_to_t1_cv = <4450>;
+		jeita_temp_tn1_to_t0_cv = <4450>;
+		jeita_temp_below_t0_cv = <4450>;
+		temp_t4_thres = <60>;
+		temp_t4_thres_minus_x_degree = <58>;
+		temp_t3_thres = <0x30>;
+		temp_t3_thres_minus_x_degree = <46>;
+		temp_t2_thres = <15>;
+		temp_t2_thres_plus_x_degree = <0x11>;
+		temp_t1p5_thres = <10>;
+		temp_t1p5_thres_plus_x_degree = <11>;
+		temp_t1_thres = <5>;
+		temp_t1_thres_plus_x_degree = <6>;
+		temp_t0_thres = <0>;
+		temp_t0_thres_plus_x_degree = <1>;
+		temp_tn1_thres = <0xfffffff6>;
+		temp_tn1_thres_plus_x_degree = <0xfffffff7>;
+		temp_neg_10_thres = <0xfffffff6>;
+		temp_t3_to_t4_fcc = <2350>;
+		temp_t2_to_t3_fcc = <0x173e>;
+		temp_t1p5_to_t2_fcc = <3900>;
+		temp_t1_to_t1p5_fcc = <2400>;
+		temp_t0_to_t1_fcc = <950>;
+		temp_tn1_to_t0_fcc = <490>;
+		nopmi,thermal-mitigation = <5950000 5400000 5000000 4500000 4000000 3700000 3500000 3000000 2800000 2500000 2000000 1500000 1000000 800000 500000  300000>;
+	};
+
+onewire_gpio:
+	onewire_gpio {
+		compatible = "xiaomi,onewire_gpio";
+		label = "xm_onewire";
+		xiaomi,version = <1>;
+		xiaomi,ow_gpio = <&tlmm 108 0>;
+		xiaomi,gpio_number = <108>;
+		mi,onewire-gpio-cfg-addr = <0x96c000 0x04>;
+		pinctrl-names = "onewire_active", "onewire_sleep";
+		pinctrl-0 = <&onewire_gpio_active>;
+		pinctrl-1 = <&onewire_gpio_sleep>;
+		status = "ok";
+	};
+	
+maxim_ds28e16:
+        maxim_ds28e16 {
+		compatible = "maxim,ds28e16";
+		label = "max_ds28e16";
+		maxim,version = <1>;
+		status = "ok";
+	};
+};
+
+&tlmm {
+/* Onewire */
+	onewire_gpio_active: onewire_gpio_active {
+			mux {
+				pins = "gpio108";
+				function = "gpio";
+			};			
+
+			config {
+				pins = "gpio108";
+				drive-strength = <2>;
+				bias-pull-up;
+			};
+		};
+
+	onewire_gpio_sleep: onewire_gpio_sleep {
+			mux {
+				pins = "gpio108";
+				function = "gpio";
+			};
+	
+			config {
+				pins = "gpio108";
+				drive-strength = <2>;
+				bias-pull-up;
+			};
+		};
+};
+
+&sdhc_2 {
+	cd-gpios = <&tlmm 88 0>;
+};
