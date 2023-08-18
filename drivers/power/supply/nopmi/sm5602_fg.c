@@ -72,8 +72,8 @@
 #define ENABLE_MAP_SOC
 
 #ifdef ENABLE_MAP_SOC
-#define MAP_MAX_SOC		98
-#define MAP_RATE_SOC	985
+#define MAP_MAX_SOC		97
+#define MAP_RATE_SOC	975
 #define MAP_MIN_SOC		4
 #endif
 //spes-capacity-end
@@ -1360,6 +1360,14 @@ static int fg_get_property(struct power_supply *psy, enum power_supply_property 
 			sm->batt_soc = ret;
 #ifdef ENABLE_MAP_SOC
 		val->intval = (((100*(sm->batt_soc*10+MAP_MAX_SOC))/MAP_RATE_SOC)-MAP_MIN_SOC)/10;
+
+         /* Cap the capacity between 0% and 100% */
+               if (val->intval > 100) {
+                   val->intval = 100;
+            }
+               if (val->intval < 0) {
+                   val->intval = 0;
+            }
 #else
 		val->intval = sm->batt_soc/10;
 #endif
