@@ -31,7 +31,6 @@
 #include <linux/workqueue.h>
 #include <linux/acpi.h>
 #include <linux/gpio/consumer.h>
-#include <net/nfc/nci.h>
 #include <linux/clk.h>
 #else
 #include <linux/gpio.h>
@@ -40,7 +39,7 @@
 #endif
 #include <linux/of_irq.h>
 #include "st21nfc.h"
-#include <board_id.h>
+#include "../misc/board_id.h"
 
 #define MAX_BUFFER_SIZE 260
 #define HEADER_LENGTH 3
