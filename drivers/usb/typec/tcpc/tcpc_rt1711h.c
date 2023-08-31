@@ -177,14 +177,20 @@ static int rt1711_read_device(void *client, u32 reg, int len, void *dst)
 {
 	struct i2c_client *i2c = client;
 	int ret = 0, count = 5;
+#if ENABLE_RT1711_DBG
 	u64 t1 = 0, t2 = 0;
+#endif
 
 	while (1) {
+#if ENABLE_RT1711_DBG
 		t1 = local_clock();
+#endif
 		ret = i2c_smbus_read_i2c_block_data(i2c, reg, len, dst);
+#if ENABLE_RT1711_DBG
 		t2 = local_clock();
 		RT1711_INFO("%s del = %lluus, reg = 0x%02X, len = %d\n",
 			    __func__, (t2 - t1) / NSEC_PER_USEC, reg, len);
+#endif
 		if (ret < 0 && count > 1)
 			count--;
 		else
@@ -198,14 +204,20 @@ static int rt1711_write_device(void *client, u32 reg, int len, const void *src)
 {
 	struct i2c_client *i2c = client;
 	int ret = 0, count = 5;
+#if ENABLE_RT1711_DBG
 	u64 t1 = 0, t2 = 0;
+#endif
 
 	while (1) {
+#if ENABLE_RT1711_DBG
 		t1 = local_clock();
+#endif
 		ret = i2c_smbus_write_i2c_block_data(i2c, reg, len, src);
+#if ENABLE_RT1711_DBG
 		t2 = local_clock();
 		RT1711_INFO("%s del = %lluus, reg = %02X, len = %d\n",
 			    __func__, (t2 - t1) / NSEC_PER_USEC, reg, len);
+#endif
 		if (ret < 0 && count > 1)
 			count--;
 		else
