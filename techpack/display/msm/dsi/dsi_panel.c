@@ -16,6 +16,7 @@
 #include "sde_dbg.h"
 
 #ifdef CONFIG_TARGET_PROJECT_K7T
+#include <linux/module.h>
 #include "exposure_adjustment.h"
 #endif
 
@@ -38,6 +39,10 @@
 #define MIN_PREFILL_LINES      35
 
 extern void lcd_esd_enable(bool on);
+
+#ifdef CONFIG_TARGET_PROJECT_K7T
+static bool screen_on = true;
+#endif
 
 enum dsi_dsc_ratio_type {
 	DSC_8BPC_8BPP,
@@ -3628,6 +3633,9 @@ static ssize_t mdss_fb_set_ea_enable(struct device *dev,
 {
 	u32 ea_enable;
 
+	if (!screen_on)
+		return len;
+
 	if (sscanf(buf, "%d", &ea_enable) != 1) {
 		DSI_ERR("sccanf buf error!\n");
 		return len;
@@ -4880,3 +4888,61 @@ int dsi_panel_apply_hbm_mode(struct dsi_panel *panel)
 
 	return rc;
 }
+
+#ifdef CONFIG_TARGET_PROJECT_K7T
+static int dsi_panel_dc_dim_notifier_callback(struct notifier_block *self, unsigned long event, void *data)
+{
+	struct drm_notify_data *evdata = data;
+	unsigned int blank;
+
+	if (event != DRM_EVENT_BLANK)
+		return 0;
+
+	if (evdata && evdata->data) {
+		blank = *(int *)(evdata->data);
+		switch (blank) {
+		case DRM_BLANK_POWERDOWN:
+			if (!screen_on)
+				break;
+			screen_on = false;
+			break;
+		case DRM_BLANK_UNBLANK:
+			if (screen_on)
+				break;
+			screen_on = true;
+			break;
+		default:
+			break;
+		}
+	}
+
+	return NOTIFY_OK;
+}
+
+static struct notifier_block dsi_panel_dc_dim_notifier = {
+	.notifier_call = dsi_panel_dc_dim_notifier_callback,
+};
+
+static int __init dsi_panel_dc_dim_init(void)
+{
+
+	int ret = 0;
+
+	// Register the driver module as a client of the DRM PANEL event notifier
+	ret = drm_register_client(&dsi_panel_dc_dim_notifier);
+
+	if (ret)
+		DSI_ERR("Failed to register notifier, err: %d\n", ret);
+
+	return ret;
+}
+
+static void __exit dsi_panel_dc_dim_exit(void)
+{
+	// Unregister the driver module as a client of the DRM PANEL event notifier
+	drm_unregister_client(&dsi_panel_dc_dim_notifier);
+}
+
+module_init(dsi_panel_dc_dim_init);
+module_exit(dsi_panel_dc_dim_exit);
+#endif
