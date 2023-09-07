@@ -1380,6 +1380,12 @@ static int sde_connector_atomic_set_property(struct drm_connector *connector,
 	/* connector-specific property handling */
 	idx = msm_property_index(&c_conn->property_info, property);
 	switch (idx) {
+	/*add for thermal begin*/
+	case CONNECTOR_PROP_LP:
+		if (connector->dev)
+			connector->dev->doze_state = val;
+		break;
+	/*add for thermal end*/
 	case CONNECTOR_PROP_OUT_FB:
 		/* clear old fb, if present */
 		if (c_state->out_fb)

@@ -219,6 +219,10 @@ struct drm_device {
 	struct drm_vma_offset_manager *vma_offset_manager;
 	/*@} */
 	int switch_power_state;
+	/*add for thermal begin*/
+	int doze_state;
+	int pre_state;
+	/*add for thermal end*/
 
 	/**
 	 * @fb_helper:
