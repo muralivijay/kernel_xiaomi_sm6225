@@ -3634,15 +3634,18 @@ static ssize_t mdss_fb_set_ea_enable(struct device *dev,
 	u32 ea_enable;
 
 	if (!screen_on)
-		return len;
+		goto exit;
 
 	if (sscanf(buf, "%d", &ea_enable) != 1) {
 		DSI_ERR("sccanf buf error!\n");
-		return len;
+		goto exit;
 	}
 
 	ea_panel_mode_ctrl(set_panel, ea_enable != 0);
 
+	goto exit;
+
+exit:
 	return len;
 }
 
