@@ -3,6 +3,7 @@
  * FocalTech TouchScreen driver.
  *
  * Copyright (c) 2012-2020, Focaltech Ltd. All rights reserved.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -63,14 +64,12 @@
 #include <linux/dma-mapping.h>
 #include "focaltech_common.h"
 
-#ifdef CONFIG_PM
-#include <linux/pm_runtime.h>
-#endif
-
 #ifdef CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE
 #include "../xiaomi/xiaomi_touch.h"
 #endif
-
+#ifdef CONFIG_PM
+#include <linux/pm_runtime.h>
+#endif
 
 /*****************************************************************************
 * Private constant and macro definitions using #define
@@ -97,8 +96,8 @@
 #define FTS_COORDS_ARR_SIZE                 4
 #define FTS_X_MIN_DISPLAY_DEFAULT           0
 #define FTS_Y_MIN_DISPLAY_DEFAULT           0
-#define FTS_X_MAX_DISPLAY_DEFAULT           720
-#define FTS_Y_MAX_DISPLAY_DEFAULT           1280
+#define FTS_X_MAX_DISPLAY_DEFAULT           1080
+#define FTS_Y_MAX_DISPLAY_DEFAULT           2400
 #define FTS_SET_ANGLE                       0x8c
 
 
@@ -112,14 +111,13 @@
 #define FTX_MAX_COMPATIBLE_TYPE             4
 #define FTX_MAX_COMMMAND_LENGTH             16
 
-/* 2021.10.9 longcheer wugang add (xiaomi game mode ) start */
+/* 2020.12.7 longcheer chenshiyang add (xiaomi game mode ) start */
 #define FTS_REG_MONITOR_MODE                0x8600
 #define FTS_REG_THDIFF                      0x8500
 #define FTS_REG_SENSIVITY                   0x8100
 #define FTS_REG_EDGE_FILTER_LEVEL           0x8D00
 #define FTS_REG_EDGE_FILTER_ORIENTATION     0x8C00
-/* 2021.10.9 longcheer wugang add (xiaomi game mode ) end */
-
+/* 2020.12.7 longcheer chenshiyang add (xiaomi game mode ) end */
 
 /*****************************************************************************
 *  Alternative mode (When something goes wrong, the modules may be able to solve the problem.)
@@ -127,7 +125,7 @@
 /*
  * For commnication error in PM(deep sleep) state
  */
-#define FTS_PATCH_COMERR_PM                     0
+#define FTS_PATCH_COMERR_PM                     1
 #define FTS_TIMEOUT_COMERR_PM                   700
 
 
@@ -170,6 +168,7 @@ struct ts_event {
 };
 
 struct fts_ts_data {
+	struct fts_upgrade *upg;
     struct i2c_client *client;
     struct spi_device *spi;
     struct device *dev;
@@ -203,7 +202,6 @@ struct fts_ts_data {
     bool charger_mode;
     bool gesture_mode;      /* gesture enable or disable, default: disable */
     bool aod_changed;
-
     /* multi-touch */
     struct ts_event *events;
     u8 *bus_tx_buf;
@@ -232,7 +230,7 @@ struct fts_ts_data {
 #endif
 	struct mutex reg_lock;
 	struct device *fts_touch_dev;
-  	struct class *fts_tp_class;
+	struct class *fts_tp_class;
 };
 
 enum _FTS_BUS_TYPE {
@@ -263,12 +261,6 @@ void fts_gesture_recovery(struct fts_ts_data *ts_data);
 int fts_gesture_readdata(struct fts_ts_data *ts_data, u8 *data);
 int fts_gesture_suspend(struct fts_ts_data *ts_data);
 int fts_gesture_resume(struct fts_ts_data *ts_data);
-
-/* FTS TEST */
-#if FTS_TEST_EN
-int fts_test_init(struct fts_ts_data *ts_data);
-int fts_test_exit(struct fts_ts_data *ts_data);
-#endif
 
 /* Apk and functions */
 int fts_create_apk_debug_channel(struct fts_ts_data *);
