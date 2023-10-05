@@ -11,42 +11,6 @@
 
 /* Spes flashlight by muralivijay@github */
 #ifdef CONFIG_CAMERA_FLASH_SPES
-/* pinctrl states */
-#define CAM_FLASH_PINCTRL_STATE_SLEEP "cam_suspend"
-#define CAM_FLASH_PINCTRL_STATE_DEFAULT "cam_default"
-
-int msm_flash_pinctrl_init(struct cam_flash_ctrl *fctrl)
-{
-
-        struct device *dev;
-
-        dev = &fctrl->pdev->dev;
-
-        fctrl->pinctrl = devm_pinctrl_get(dev);
-        if (IS_ERR_OR_NULL(fctrl->pinctrl)) {
-                CAM_DBG(CAM_FLASH, "Getting flash pinctrl handle failed");
-                return -EINVAL;
-        }
-        fctrl->gpio_state_active =
-                pinctrl_lookup_state(fctrl->pinctrl,
-                                CAM_FLASH_PINCTRL_STATE_DEFAULT);
-        if (IS_ERR_OR_NULL(fctrl->gpio_state_active)) {
-                CAM_ERR(CAM_FLASH,
-                        "Failed to get the flash on state pinctrl handle");
-                return -EINVAL;
-        }
-        fctrl->gpio_state_suspend
-                = pinctrl_lookup_state(fctrl->pinctrl,
-                                CAM_FLASH_PINCTRL_STATE_SLEEP);
-        if (IS_ERR_OR_NULL(fctrl->gpio_state_suspend)) {
-                CAM_ERR(CAM_FLASH,
-                        "Failed to get the flash off state pinctrl handle");
-                return -EINVAL;
-        }
-
-        return 0;
-}
-
 struct gpio_flash_led mgpio_flash_led = {
         .flash_en = 0,
         .flash_now = 0,
@@ -463,7 +427,6 @@ static int32_t cam_flash_platform_probe(struct platform_device *pdev)
 /* Spes flashlight by muralivijay@github */
 #ifdef CONFIG_CAMERA_FLASH_SPES
         struct device_node *gnode = pdev->dev.of_node; //store qcom-flash-gpios
-        int pinctrl;
 #endif
 
 	CAM_DBG(CAM_FLASH, "Enter");
@@ -573,17 +536,8 @@ static int32_t cam_flash_platform_probe(struct platform_device *pdev)
 
 /* Spes flashlight by muralivijay@github */
 #ifdef CONFIG_CAMERA_FLASH_SPES
-                //call pinctrl
-                pinctrl = msm_flash_pinctrl_init(fctrl);
-                if (pinctrl == 0) {
-                CAM_INFO(CAM_FLASH, "camera flash pinctrl successfully returned with 0", pinctrl);
-        } else {
-                CAM_ERR(CAM_FLASH, "camera flash pinctrl read fail");
-
-        }
-
                 // Get flash_en GPIO
-                /*Xiaomi added tlmm 85 pin in dts but not used on flashlight */
+                /*Xiaomi added tlmm 85 pin in dts used as flash mode in camera */
                 mgpio_flash_led.flash_en = of_get_named_gpio(gnode, "qcom,flash-gpios", 0);
                 if (!gpio_is_valid(mgpio_flash_led.flash_en)) {
                 // Handle error if GPIO is not valid
@@ -592,7 +546,7 @@ static int32_t cam_flash_platform_probe(struct platform_device *pdev)
                 CAM_INFO(CAM_FLASH, "flash_en GPIO: %d", mgpio_flash_led.flash_en);
 
                 // Get flash_now GPIO
-                /*Xiaomi added pm6125_gpios 2 pin in dts  mainly used on flashlight */
+                /*Xiaomi added pm6125_gpios 2 pin in dts  mainly used as torch mode */
                 mgpio_flash_led.flash_now = of_get_named_gpio(gnode, "qcom,flash-gpios", 1);
                 if (!gpio_is_valid(mgpio_flash_led.flash_now)) {
                 // Handle error if GPIO is not valid

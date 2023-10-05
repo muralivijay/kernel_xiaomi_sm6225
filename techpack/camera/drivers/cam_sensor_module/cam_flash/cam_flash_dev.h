@@ -223,12 +223,6 @@ struct cam_flash_ctrl {
 	uint32_t                            last_flush_req;
 	uint32_t                            streamoff_count;
 	int32_t                             apply_streamoff;
-/* Spes flashlight by muralivijay@github */
-#ifdef CONFIG_CAMERA_FLASH_SPES
-	struct pinctrl                      *pinctrl;
-	struct pinctrl_state                *gpio_state_active;
-	struct pinctrl_state                *gpio_state_suspend;
-#endif
 };
 
 int cam_flash_pmic_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg);

@@ -118,30 +118,6 @@ touchscreen {
 		};
 	};
 
-	led_flash {
-	led_flash_default:led_flash_default {
-			pins = "gpio2";
-			function = "func1";
-			input-disable;
-			output-enable;
-			bias-disable;
-			output-high;
-			power-source = <0>;
-			qcom,drive-strength = <2>;
-		};
-
-	led_flash_suspend:led_flash_suspend {
-			pins = "gpio2";
-			function = "func1";
-			input-disable;
-			output-enable;
-			bias-disable;
-			output-low;
-			power-source = <0>;
-			qcom,drive-strength = <2>;
-		};
-	};
-
 	rf_pa1_therm {
 		rf_pa1_therm_default: rf_pa1_therm_default {
 			pins = "gpio7";
