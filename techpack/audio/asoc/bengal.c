@@ -1083,7 +1083,7 @@ static DEFINE_MUTEX(g_aw_dsp_lock);
 extern int afe_get_topology(int port_id);
 extern int aw_send_afe_cal_apr(uint32_t param_id,
 	void *buf, int cmd_size, bool write);
-extern aw_check_dsp_ready(void);
+extern int aw_check_dsp_ready(void);
 enum {
 	AW_SPIN_0 = 0,
 	AW_SPIN_90,
