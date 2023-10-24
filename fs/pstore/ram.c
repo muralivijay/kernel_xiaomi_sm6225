@@ -997,7 +997,7 @@ static int __init ramoops_memreserve(char *p)
 
 	size = memparse(p, &p) & PAGE_MASK;
 	ramoops_data.mem_size = size;
-	ramoops_data.mem_address = 0xb0000000;
+	ramoops_data.mem_address = 0x5D000000;
 	ramoops_data.console_size = size / 2;
 	ramoops_data.pmsg_size = size / 2;
 	ramoops_data.dump_oops = 1;
