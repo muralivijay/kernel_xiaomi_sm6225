@@ -436,7 +436,7 @@ static ssize_t request_vdm_cmd_store(struct device *dev,
 	memset(data, 0, 40);
 
 	ret = sscanf(buf, "%d,%s\n", &cmd, buffer);
-	class_info("%s:cmd:%d, buffer:%s\n", __func__, cmd, buffer);
+	class_info("%s:cmd:%d, buffer:%s, ret:%d\n", __func__, cmd, buffer, ret);
 
 	StringToHex(buffer, data, &count);
 	class_info("%s:count = %d\n", __func__, count);
