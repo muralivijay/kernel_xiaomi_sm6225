@@ -54,6 +54,9 @@ static enum power_supply_property max77729_fuelgauge_props[] = {
 	POWER_SUPPLY_PROP_SHUTDOWN_DELAY,
 };
 
+//fix battery capacity goes down fast from 100% to 99%
+static bool maxim_battery_full = false;
+
 int max77729_fuelgauge_prop_is_writeable(struct power_supply *psy,
 		enum power_supply_property psp)
 {
@@ -2133,6 +2136,18 @@ static int max77729_fg_get_property(struct power_supply *psy,
 			val->intval = 1000;
 		if (val->intval < 0)
 			val->intval = 0;
+
+        /* fix battery capacity goes down fast from 100% to 99% */
+		if (val->intval >= 995 && val->intval <= 1000) {
+			val->intval = 1000;
+			maxim_battery_full = true;
+		}
+		else if((true == maxim_battery_full)&&(val->intval >= 995 && val->intval <= 1000)) {
+			val->intval = 1000;
+		}
+		else {
+			maxim_battery_full = false;
+		}
 
 		fuelgauge->raw_capacity = val->intval;
 
