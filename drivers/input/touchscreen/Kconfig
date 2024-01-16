@@ -1354,15 +1354,11 @@ source "drivers/input/touchscreen/xiaomi/Kconfig"
 
 source "drivers/input/touchscreen/ft3418_i2c/Kconfig"
 
-source "drivers/input/touchscreen/nt36525b_spi/Kconfig"
-
 source "drivers/input/touchscreen/synaptics_tcm/Kconfig"
 
 source "drivers/input/touchscreen/focaltech_touch/Kconfig"
 
 source "drivers/input/touchscreen/nt36xxx/Kconfig"
-
-source "drivers/input/touchscreen/ft8006s_spi/Kconfig"
 
 config TOUCHSCREEN_COMMON
     bool "touchscreen for xiaomi project"

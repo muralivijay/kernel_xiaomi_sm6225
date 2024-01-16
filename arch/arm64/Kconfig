@@ -310,12 +310,6 @@ config TARGET_PROJECT_K7T
         help
         Custom project for K7T pcb.
 
-config TARGET_PROJECT_C3Q
-        default n
-        bool "Custom project for hardware C3Q pcb"
-        help
-        Custom project for C3Q pcb.
-
 menu "Bus support"
 
 config PCI

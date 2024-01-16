@@ -2283,11 +2283,7 @@ int aw87xxx_dev_1_pa(int enable, int mode)
 	else
 		set_mode = mode;
 	pr_info("%s: aw87xxx_spk_mode %d\n", __func__, set_mode);
-#if defined(CONFIG_TARGET_PROJECT_C3Q)
-	ret = aw87xxx_set_profile(AW_DEV_0, aw_profile[set_mode]);
-#else
 	ret = aw87xxx_set_profile(AW_DEV_1, aw_profile[set_mode]);
-#endif
 
 	if (ret < 0) {
 		pr_err("%s: mode:%d set failed\n", __func__, set_mode);

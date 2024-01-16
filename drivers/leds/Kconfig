@@ -724,15 +724,6 @@ config LEDS_POWERNV
 	  To compile this driver as a module, choose 'm' here: the module
 	  will be called leds-powernv.
 
-config LEDS_MSM_BACK_GPIO_FLASH
-        tristate "Support for BACK GPIO Flash LEDs"
-        help
-          This driver supports the leds functionality of GPIO Flash LED. It
-          includes flash mode and torch mode.
-
-          To compile this driver as a module, choose M here: the module will
-          be called leds-back-gpio-flash.
-
 config LEDS_SYSCON
 	bool "LED support for LEDs on system controllers"
 	depends on LEDS_CLASS=y
@@ -806,14 +797,6 @@ config LEDS_QPNP_FLASH_V2
           from PMI8998, PM8150L and their derivatives.  It can configure the
           flash LED target current for several independent channels.  It also
           supports various over current and over temperature mitigation features.
-
-config LEDS_QPNP_VIBRATOR_LDO
-	tristate "Vibrator-LDO support for QPNP PMIC"
-	depends on LEDS_CLASS && MFD_SPMI_PMIC
-	help
-	  This option enables device driver support for the vibrator-ldo
-	  peripheral found on Qualcomm Technologies, Inc. QPNP PMICs.
-	  The vibrator-ldo peripheral is capable of driving ERM vibrators.
 
 config LEDS_QPNP_VIBRATOR
 	tristate "Vibrator support for QPNP PMIC"
