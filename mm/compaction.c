@@ -984,7 +984,7 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
 		VM_BUG_ON_PAGE(PageCompound(page), page);
 
 		/* Successfully isolated */
-		del_page_from_lru_list(page, lruvec);
+		del_page_from_lru_list(page, lruvec, page_lru(page));
 		inc_node_page_state(page,
 				NR_ISOLATED_ANON + page_is_file_cache(page));
 
@@ -1590,7 +1590,7 @@ typedef enum {
  * Allow userspace to control policy on scanning the unevictable LRU for
  * compactable pages.
  */
-int sysctl_compact_unevictable_allowed __read_mostly = 0;
+int sysctl_compact_unevictable_allowed __read_mostly = 1;
 
 static inline void
 update_fast_start_pfn(struct compact_control *cc, unsigned long pfn)
