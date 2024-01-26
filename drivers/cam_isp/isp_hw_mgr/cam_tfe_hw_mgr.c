@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2019-2021, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/slab.h>
@@ -1765,6 +1766,8 @@ void cam_tfe_cam_cdm_callback(uint32_t handle, void *userdata,
 				ctx->last_submit_bl_cmd.cmd[i].input_len - 1);
 
 			cam_cdm_util_dump_cmd_buf(buf_start, buf_end);
+			cam_mem_put_cpu_buf(
+				ctx->last_submit_bl_cmd.cmd[i].mem_handle);
 		}
 		if (ctx->packet != NULL)
 			cam_packet_dump_patch_info(ctx->packet,
@@ -2971,6 +2974,17 @@ static int cam_tfe_mgr_start_hw(void *hw_mgr_priv, void *start_hw_args)
 				sizeof(g_tfe_hw_mgr.debug_cfg.csid_debug));
 	}
 
+	/* set tpg debug information for top tpg */
+	for (i = 0; i < CAM_TOP_TPG_HW_NUM_MAX; i++) {
+		if (g_tfe_hw_mgr.tpg_devices[i]) {
+			rc = g_tfe_hw_mgr.tpg_devices[i]->hw_ops.process_cmd(
+				g_tfe_hw_mgr.tpg_devices[i]->hw_priv,
+				CAM_ISP_HW_CMD_TPG_SET_PATTERN,
+				&g_tfe_hw_mgr.debug_cfg.set_tpg_pattern,
+				sizeof(g_tfe_hw_mgr.debug_cfg.set_tpg_pattern));
+		}
+	}
+
 	camif_debug = g_tfe_hw_mgr.debug_cfg.camif_debug;
 	list_for_each_entry(hw_mgr_res, &ctx->res_list_tfe_in, list) {
 		for (i = 0; i < CAM_ISP_HW_SPLIT_MAX; i++) {
@@ -3276,6 +3290,7 @@ static int cam_tfe_mgr_dump(void *hw_mgr_priv, void *args)
 	}
 	dump_args->offset = isp_hw_dump_args.offset;
 	CAM_DBG(CAM_ISP, "offset %u", dump_args->offset);
+	cam_mem_put_cpu_buf(dump_args->buf_handle);
 	return rc;
 }
 
@@ -3881,6 +3896,7 @@ static int cam_tfe_update_dual_config(
 		(cmd_desc->offset >=
 			(len - sizeof(struct cam_isp_tfe_dual_config)))) {
 		CAM_ERR(CAM_ISP, "not enough buffer provided");
+		cam_mem_put_cpu_buf(cmd_desc->mem_handle);
 		return -EINVAL;
 	}
 
@@ -3893,6 +3909,7 @@ static int cam_tfe_update_dual_config(
 		(remain_len -
 			offsetof(struct cam_isp_tfe_dual_config, stripes))) {
 		CAM_ERR(CAM_ISP, "not enough buffer for all the dual configs");
+		cam_mem_put_cpu_buf(cmd_desc->mem_handle);
 		return -EINVAL;
 	}
 
@@ -3954,6 +3971,7 @@ static int cam_tfe_update_dual_config(
 	}
 
 end:
+	cam_mem_put_cpu_buf(cmd_desc->mem_handle);
 	return rc;
 }
 
@@ -5450,6 +5468,7 @@ DEFINE_DEBUGFS_ATTRIBUTE(cam_tfe_camif_debug,
 
 static int cam_tfe_hw_mgr_debug_register(void)
 {
+	g_tfe_hw_mgr.debug_cfg.set_tpg_pattern = CAM_TOP_TPG_DEFAULT_PATTERN;
 	g_tfe_hw_mgr.debug_cfg.dentry = debugfs_create_dir("camera_tfe",
 		NULL);
 
@@ -5479,6 +5498,14 @@ static int cam_tfe_hw_mgr_debug_register(void)
 		g_tfe_hw_mgr.debug_cfg.dentry,
 		&g_tfe_hw_mgr.debug_cfg.enable_csid_recovery)) {
 		CAM_ERR(CAM_ISP, "failed to create enable_csid_recovery");
+		goto err;
+	}
+
+	if (!debugfs_create_u32("set_tpg_pattern",
+		0644,
+		g_tfe_hw_mgr.debug_cfg.dentry,
+		&g_tfe_hw_mgr.debug_cfg.set_tpg_pattern)) {
+		CAM_ERR(CAM_ISP, "failed to create set_tpg_pattern");
 		goto err;
 	}
 
