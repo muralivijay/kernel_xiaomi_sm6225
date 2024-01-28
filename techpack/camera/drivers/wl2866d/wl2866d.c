@@ -136,7 +136,7 @@ static int wl2866d_read_reg(u8 reg, u8 *val)
 }
 
 #if CONTROL_GPIO54_ENABLE
-static void enable_i2c_pullup()
+static void enable_i2c_pullup(void)
 {
     int ret = 0;
     printk("try control gpio 54\n");
