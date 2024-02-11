@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2014-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2014-2021, The Linux Foundation. All rights reserved.
  * Copyright (C) 2013 Red Hat
  * Author: Rob Clark <robdclark@gmail.com>
  *
@@ -1099,9 +1100,10 @@ static void _sde_kms_release_splash_resource(struct sde_kms *sde_kms,
 	/* remove the votes if all displays are done with splash */
 	if (!sde_kms->splash_data.num_splash_displays) {
 		for (i = 0; i < SDE_POWER_HANDLE_DBUS_ID_MAX; i++)
-			sde_power_data_bus_set_quota(&priv->phandle, i,
-				SDE_POWER_HANDLE_ENABLE_BUS_AB_QUOTA,
-				SDE_POWER_HANDLE_ENABLE_BUS_IB_QUOTA);
+			if (sde_kms->perf.sde_rsc_available)
+				sde_power_data_bus_set_quota(&priv->phandle, i,
+					SDE_POWER_HANDLE_ENABLE_BUS_AB_QUOTA,
+					SDE_POWER_HANDLE_ENABLE_BUS_IB_QUOTA);
 
 		pm_runtime_put_sync(sde_kms->dev->dev);
 	}
@@ -1450,6 +1452,7 @@ static int _sde_kms_setup_displays(struct drm_device *dev,
 		.get_panel_vfp = NULL,
 	};
 	static const struct sde_connector_ops dp_ops = {
+		.set_info_blob = dp_connnector_set_info_blob,
 		.post_init  = dp_connector_post_init,
 		.detect     = dp_connector_detect,
 		.get_modes  = dp_connector_get_modes,

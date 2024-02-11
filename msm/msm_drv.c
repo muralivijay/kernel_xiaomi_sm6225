@@ -1,4 +1,7 @@
 /*
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ */
+/*
  * Copyright (c) 2016-2021, The Linux Foundation. All rights reserved.
  * Copyright (C) 2013 Red Hat
  * Author: Rob Clark <robdclark@gmail.com>
@@ -842,6 +845,7 @@ mdss_init_fail:
 	kfree(priv);
 priv_alloc_fail:
 	drm_dev_put(ddev);
+	platform_set_drvdata(pdev, NULL);
 	return ret;
 }
 
@@ -1462,7 +1466,7 @@ void msm_mode_object_event_notify(struct drm_mode_object *obj,
 
 static int msm_release(struct inode *inode, struct file *filp)
 {
-	struct drm_file *file_priv = filp->private_data;
+	struct drm_file *file_priv;
 	struct drm_minor *minor;
 	struct drm_device *dev;
 	struct msm_drm_private *priv;
@@ -1474,6 +1478,7 @@ static int msm_release(struct inode *inode, struct file *filp)
 
 	mutex_lock(&msm_release_lock);
 
+	file_priv = filp->private_data;
 	if (!file_priv) {
 		ret = -EINVAL;
 		goto end;
