@@ -500,7 +500,7 @@ enum htt_dbg_ext_stats_type {
      * params:
      *          None
      * Response MSG:
-     *          htt_latency_prof_cal_stats_tlv
+     *          htt_stats_latency_prof_cal_data_tlv
      */
     HTT_DBG_EXT_PHY_PROF_CAL_STATS = 52,
 
@@ -992,6 +992,8 @@ typedef struct {
     /** pdev uptime in microseconds **/
     A_UINT32 pdev_up_time_us_low;
     A_UINT32 pdev_up_time_us_high;
+    /** count of ofdma sequences flushed */
+    A_UINT32 ofdma_seq_flush;
 } htt_stats_tx_pdev_cmn_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_pdev_cmn_tlv htt_tx_pdev_stats_cmn_tlv;
@@ -3382,6 +3384,10 @@ typedef struct {
     A_UINT32 be_bsr_trigger_partial_resp;
     /** 11BE EHT MU BAR Trigger frame completed with partial user response */
     A_UINT32 be_mu_bar_trigger_partial_resp;
+    /** 11BE EHT MU RTS Trigger frame blocked due to partner link TX/RX(eMLSR) */
+    A_UINT32 be_mu_rts_trigger_blocked;
+    /** 11BE EHT MU BSR Trigger frame blocked due to partner link TX/RX(eMLSR) */
+    A_UINT32 be_bsr_trigger_blocked;
 } htt_stats_tx_selfgen_be_err_stats_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_selfgen_be_err_stats_tlv htt_tx_selfgen_be_err_stats_tlv;
@@ -4482,6 +4488,8 @@ typedef struct {
      * multicast/broadcast packets received on STA side.
      */
     A_UINT32 mec_notify;
+    A_UINT32 arp_response;
+    A_UINT32 arp_request;
 } htt_stats_tx_de_classify_stats_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_de_classify_stats_tlv htt_tx_de_classify_stats_tlv;
@@ -5398,6 +5406,8 @@ typedef struct {
     A_UINT32 trigger_type_11be[HTT_TX_PDEV_STATS_NUM_11BE_TRIGGER_TYPES];
     /** Stats for Extra EHT LTF */
     A_UINT32 extra_eht_ltf;
+    /** Counter for Extra EHT LTFs in OFDMA sequences */
+    A_UINT32 extra_eht_ltf_ofdma;
 } htt_stats_tx_pdev_rate_stats_tlv;
 /* preserve old name alias for new name consistent with the tag name */
 typedef htt_stats_tx_pdev_rate_stats_tlv htt_tx_pdev_rate_stats_tlv;
@@ -8716,7 +8726,7 @@ enum {
 };
 
 #define HTT_STATS_MAX_CAL_IDX_CNT 8
-typedef struct {
+typedef struct { /* DEPRECATED */
 
     htt_tlv_hdr_t tlv_hdr;
 
@@ -8771,9 +8781,77 @@ typedef struct {
 
     /** No of indices invoked per each cal profile */
     A_UINT32 CalCnt[HTT_STATS_MAX_PROF_CAL];
-} htt_stats_latency_prof_cal_stats_tlv;
+} htt_stats_latency_prof_cal_stats_tlv; /* DEPRECATED */
 /* preserve old name alias for new name consistent with the tag name */
-typedef htt_stats_latency_prof_cal_stats_tlv htt_latency_prof_cal_stats_tlv;
+typedef htt_stats_latency_prof_cal_stats_tlv htt_latency_prof_cal_stats_tlv; /* DEPRECATED */
+
+typedef struct {
+    /** The cnt is incremented when each time the calindex takes place */
+    A_UINT32 cnt;
+
+    /** Minimum time taken to complete the calibration - in us */
+    A_UINT32 min;
+
+    /** Maximum time taken to complete the calibration -in us */
+    A_UINT32 max;
+
+    /** Time taken by the cal for its final time execution - in us */
+    A_UINT32 last;
+
+    /** Total time taken - in us */
+    A_UINT32 tot;
+
+    /** hist_intvl - in us, by default will be set to 2000 us */
+    A_UINT32 hist_intvl;
+
+    /**
+     * If last is less than hist_intvl, then hist[0]++,
+     * If last is less than hist_intvl << 1, then hist[1]++,
+     * otherwise hist[2]++.
+     */
+    A_UINT32 hist[HTT_INTERRUPTS_LATENCY_PROFILE_MAX_HIST];
+
+    /** pf_last will log the current no of page faults */
+    A_UINT32 pf_last;
+
+    /** Sum of all page faults happened */
+    A_UINT32 pf_tot;
+
+    /** If pf_last > pf_max then pf_max = pf_last */
+    A_UINT32 pf_max;
+
+    /**
+     * For each cal profile, only certain no of cal indices were invoked,
+     * this member will store what all the indices got invoked per each
+     * cal profile
+     */
+    A_UINT32 enabled_cal_idx;
+
+/*
+ * NOTE: due to backwards-compatibility requirements,
+ * no fields can be added to this struct.
+ */
+} htt_stats_latency_prof_cal_data;
+
+typedef struct {
+
+    htt_tlv_hdr_t tlv_hdr;
+
+    /** To verify whether prof cal is enabled or not */
+    A_UINT32 enable;
+
+    /** current pdev_id */
+    A_UINT32 pdev_id;
+
+    /** No of indices invoked per each cal profile */
+    A_UINT32 cal_cnt[HTT_STATS_MAX_PROF_CAL];
+
+    /** Latency Cal Profile name */
+    A_UINT8 latency_prof_name[HTT_STATS_MAX_PROF_CAL][HTT_STATS_MAX_PROF_STATS_NAME_LEN];
+
+    /** Latency Cal data */
+    htt_stats_latency_prof_cal_data latency_data[HTT_STATS_MAX_PROF_CAL][HTT_STATS_MAX_CAL_IDX_CNT];
+} htt_stats_latency_prof_cal_data_tlv;
 
 #define HTT_ML_PEER_EXT_DETAILS_PEER_ASSOC_IPC_RECVD_M          0x0000003F
 #define HTT_ML_PEER_EXT_DETAILS_PEER_ASSOC_IPC_RECVD_S          0
@@ -10498,6 +10576,7 @@ typedef enum {
     HTT_CTRL_PATH_STATS_CAL_TYPE_PEF                     = 0x16,
     HTT_CTRL_PATH_STATS_CAL_TYPE_PADROOP                 = 0x17,
     HTT_CTRL_PATH_STATS_CAL_TYPE_SELFCALTPC              = 0x18,
+    HTT_CTRL_PATH_STATS_CAL_TYPE_RXSPUR                  = 0x19,
 
     /* add new cal types above this line */
     HTT_CTRL_PATH_STATS_CAL_TYPE_INVALID                 = 0xFF
@@ -10546,6 +10625,7 @@ static INLINE A_UINT8 *htt_ctrl_path_cal_type_id_to_name(A_UINT32 cal_type_id)
         HTT_RETURN_STRING(HTT_CTRL_PATH_STATS_CAL_TYPE_PEF);
         HTT_RETURN_STRING(HTT_CTRL_PATH_STATS_CAL_TYPE_PADROOP);
         HTT_RETURN_STRING(HTT_CTRL_PATH_STATS_CAL_TYPE_SELFCALTPC);
+        HTT_RETURN_STRING(HTT_CTRL_PATH_STATS_CAL_TYPE_RXSPUR);
     }
 
     return (A_UINT8 *) "HTT_CTRL_PATH_STATS_CAL_TYPE_UNKNOWN";
