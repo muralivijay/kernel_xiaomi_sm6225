@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2010-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2021-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -2293,6 +2293,7 @@ typedef enum {
     OP(WMI_VDEV_OOB_CONNECTION_RESP_EVENTID) \
     OP(WMI_AUDIO_TRANSPORT_SWITCH_TYPE_EVENTID) \
     OP(WMI_PDEV_WIFI_RADAR_CAL_COMPLETION_STATUS_EVENTID) \
+    OP(WMI_MLO_LINK_INFO_SYNC_EVENTID) \
     /* add new EVT_LIST elements above this line */
 
 
@@ -5630,7 +5631,7 @@ WMITLV_CREATE_PARAM_STRUC(WMI_SERVICE_READY_EXT_EVENTID);
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_aux_dev_capabilities, aux_dev_caps, WMITLV_SIZE_VAR) \
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_enhanced_aoa_caps_param, aoa_caps_param, WMITLV_SIZE_VAR) \
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_enhanced_aoa_per_band_caps_param, aoa_per_band_caps_param, WMITLV_SIZE_VAR) \
-    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_STRUC_wmi_sar_flags, wmi_sar_flag_tlv_param, sar_flags, WMITLV_SIZE_VAR)
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_sar_flag_tlv_param, sar_flags, WMITLV_SIZE_VAR)
 WMITLV_CREATE_PARAM_STRUC(WMI_SERVICE_READY_EXT2_EVENTID);
 
 #define WMITLV_TABLE_WMI_SPECTRAL_CAPABILITIES_EVENTID(id,op,buf,len) \
@@ -5855,6 +5856,16 @@ WMITLV_CREATE_PARAM_STRUC(WMI_MGMT_RX_EVENTID);
 #define WMITLV_TABLE_WMI_MGMT_RX_FW_CONSUMED_EVENTID(id,op,buf,len) \
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_STRUC_wmi_mgmt_rx_fw_consumed_hdr, wmi_mgmt_rx_fw_consumed_hdr, hdr, WMITLV_SIZE_FIX)
     WMITLV_CREATE_PARAM_STRUC(WMI_MGMT_RX_FW_CONSUMED_EVENTID);
+
+/* Management MLO LINK Info Sync Event */
+#define WMITLV_TABLE_WMI_MLO_LINK_INFO_SYNC_EVENTID(id,op,buf,len)                                                                                                 \
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_mgmt_ml_info, ml_info, WMITLV_SIZE_VAR) \
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_BYTE, A_UINT8, bpcc_bufp, WMITLV_SIZE_VAR) \
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_is_my_mgmt_frame, my_frame, WMITLV_SIZE_VAR) \
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_mlo_link_removal_tbtt_count, link_removal_tbtt_count, WMITLV_SIZE_VAR) \
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_mlo_bcast_t2lm_info, mlo_bcast_t2lm_info, WMITLV_SIZE_VAR) \
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_BYTE, A_UINT8, ie_data, WMITLV_SIZE_VAR)
+WMITLV_CREATE_PARAM_STRUC(WMI_MLO_LINK_INFO_SYNC_EVENTID);
 
 /* TBTT offset Event */
 #define WMITLV_TABLE_WMI_TBTTOFFSET_UPDATE_EVENTID(id,op,buf,len)                                                         \
