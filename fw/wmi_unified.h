@@ -102,14 +102,18 @@ extern "C" {
     #define WMI_DUMMY_ZERO_LEN_FIELD struct {} dummy_zero_len_field
 #endif
 
-#define WMI_VAR_LEN_ARRAY1(type, name) \
-    union { \
-        type name ## __first_elem; \
-        struct { \
-            WMI_DUMMY_ZERO_LEN_FIELD; \
-            type name[]; \
-        }; \
-    }
+#if defined(__WINDOWS__)
+    #define WMI_VAR_LEN_ARRAY1(type, name) type name[1]
+#else
+    #define WMI_VAR_LEN_ARRAY1(type, name) \
+        union { \
+            type name ## __first_elem; \
+            struct { \
+                WMI_DUMMY_ZERO_LEN_FIELD; \
+                type name[]; \
+            }; \
+        }
+#endif
 
 #define ATH_MAC_LEN             6               /**< length of MAC in bytes */
 #define WMI_EVENT_STATUS_SUCCESS 0 /* Success return status to host */
@@ -2485,6 +2489,8 @@ typedef enum {
     WMI_MLO_PRIMARY_LINK_PEER_MIGRATION_EVENTID,
     /** WMI Event to spcify reason for link state switch */
     WMI_MLO_LINK_STATE_SWITCH_EVENTID,
+    /** WMI Event to sync link info to host */
+    WMI_MLO_LINK_INFO_SYNC_EVENTID,
 
     /* WMI event specific to Quiet handling */
     WMI_QUIET_HANDLING_EVENTID = WMI_EVT_GRP_START_ID(WMI_GRP_QUIET_OFL),
@@ -9489,6 +9495,13 @@ typedef enum {
      * For a 320 MHz channel, bit0 = highest 20 MHz, bit15 = lowest 20 MHz
      */
     WMI_PDEV_PARAM_DFS_RADAR_MASK,
+
+    /** PWR_REDUCTION_IN_QUARTER_DB:
+     * Reduce final Tx power (derived after all considerations)
+     * by specified value in units of 0.25 dB.
+     * E.g. a value of 4 will result in a 1.0 dB tx power reduction.
+     */
+    WMI_PDEV_PARAM_PWR_REDUCTION_IN_QUARTER_DB,
 } WMI_PDEV_PARAM;
 
 #define WMI_PDEV_ONLY_BSR_TRIG_IS_ENABLED(trig_type) WMI_GET_BITS(trig_type, 0, 1)
@@ -13217,13 +13230,63 @@ typedef struct {
     A_UINT32 awgn_cca_ack_reset_cnt;
     /*
      * AWGN int BW cnt used to store interference occurred at 20/40/80/160MHz
-     * bw_cnt[0] counts interference detections in 20 MHz BW,
-     * bw_cnt[1] counts interference detections in 40 MHz BW,
-     * bw_cnt[2] counts interference detections in 80 MHz BW,
-     * bw_cnt[3] counts interference detections in 160 MHz BW,
-     * bw_cnt[4] and bw_cnt[6] are reserved for 240 MHz and 320 MHz.
+     * awgn_int_bw_cnt[0] counts interference detections in 20 MHz BW,
+     * awgn_int_bw_cnt[1] counts interference detections in 40 MHz BW,
+     * awgn_int_bw_cnt[2] counts interference detections in 80 MHz BW,
+     * awgn_int_bw_cnt[3] counts interference detections in 160 MHz BW,
+     * awgn_int_bw_cnt[4] is reserved for 240 MHz BW,
+     * awgn_int_bw_cnt[5] counts interference detections in 320 MHz BW.
      */
     A_UINT32 awgn_int_bw_cnt[WMI_AWGN_MAX_BW];
+
+    /* Number of OBSS interference occurred */
+    A_UINT32 obss_int_cnt;
+
+    /* Number of OBSS interference Sent to host */
+    A_UINT32 obss_int_evt_sent_host_cnt;
+
+    /* Number of OBSS interference skiped due to AWGN as high priority */
+    A_UINT32 obss_int_evt_skip_awgn_cnt;
+
+    /* Number of OBSS interference skiped due to duplicate OBSS interference */
+    A_UINT32 obss_int_evt_skip_dup_cnt;
+
+    /* Current OBSS interference segment details
+     * chan_bw_interference_bitmap:
+     * Indicates which 20MHz segments contain interference
+     *  320 MHz: bits 0-15
+     *  160 MHz: bits 0-7
+     *   80 MHz: bits 0-3
+     * Within the bitmap, Bit-0 represents lowest 20Mhz, Bit-1 represents
+     * second lowest 20Mhz and so on.
+     * Each bit position will indicate 20MHz in which interference is seen.
+     * (Valid 16 bits out of 32 bit integer)
+     */
+    A_UINT32 obss_int_cur_int_seg;
+
+    /* Previous OBSS Int Segment details
+     * chan_bw_interference_bitmap:
+     * Indicates which 20MHz segments contain interference
+     *  320 MHz: bits 0-15
+     *  160 MHz: bits 0-7
+     *   80 MHz: bits 0-3
+     * Within the bitmap, Bit-0 represents lowest 20Mhz, Bit-1 represents
+     * second lowest 20Mhz and so on.
+     * Each bit position will indicate 20MHz in which interference is seen.
+     * (Valid 16 bits out of 32 bit integer)
+     */
+    A_UINT32 obss_int_prv_int_seg;
+
+    /*
+     * OBSS int BW cnt used to store interference occurred at 20/40/80/160MHz
+     * obss_int_bw_cnt[0] counts interference detections in 20 MHz BW,
+     * obss_int_bw_cnt[1] counts interference detections in 40 MHz BW,
+     * obss_int_bw_cnt[2] counts interference detections in 80 MHz BW,
+     * obss_int_bw_cnt[3] counts interference detections in 160 MHz BW,
+     * obss_int_bw_cnt[4] counts interference detections in 240 MHz BW,
+     * obss_int_bw_cnt[5] counts interference detections in 320 MHz BW,
+     */
+    A_UINT32 obss_int_bw_cnt[WMI_AWGN_MAX_BW];
 } wmi_ctrl_path_awgn_stats_struct;
 
 typedef struct {
@@ -16247,6 +16310,8 @@ typedef struct {
 #define WMI_MLO_FLAGS_SET_NSTR_BITMAP_SIZE(mlo_flags, value) WMI_SET_BITS(mlo_flags, 12, 1, value)
 #define WMI_MLO_FLAGS_GET_MLO_LINK_SWITCH(mlo_flags)        WMI_GET_BITS(mlo_flags, 13, 1)
 #define WMI_MLO_FLAGS_SET_MLO_LINK_SWITCH(mlo_flags, value) WMI_SET_BITS(mlo_flags, 13, 1, value)
+#define WMI_MLO_FLAGS_GET_MLO_BRIDGE_LINK(mlo_flags)        WMI_GET_BITS(mlo_flags, 14, 1)
+#define WMI_MLO_FLAGS_SET_MLO_BRIDGE_LINK(mlo_flags, value) WMI_SET_BITS(mlo_flags, 14, 1, value)
 
 /* this structure used for pass mlo flags*/
 typedef struct {
@@ -18409,6 +18474,9 @@ typedef enum {
 
     /* DCS stats enable configuration at VDEV level */
     WMI_VDEV_PARAM_DCS,                                   /* 0xC2 */
+
+    /* VDEV parameter to configure Telescopic DTIM count */
+    WMI_VDEV_PARAM_TELESDTIM_CNT,                         /* 0xC3 */
 
 
     /*=== ADD NEW VDEV PARAM TYPES ABOVE THIS LINE ===
@@ -23648,6 +23716,12 @@ enum {
     WMI_WOW_FLAG_FORCED_DTIM_ON_SYS_SUSPEND = 0x00000080,
     /* Flag to force DPD lock. */
     WMI_WOW_FLAG_FORCED_DPD_LOCK            = 0x00000100,
+    /*
+     * Feature flag for INI 'enable_teles_dtim_on_system_suspend'
+     * This flag/bit will be set if INI 'enable_teles_dtim_on_system_suspend'
+     * is enabled.
+     */
+    WMI_WOW_FLAG_TELES_DTIM_ON_SYS_SUSPEND  = 0x00000200,
 };
 
 typedef struct {
@@ -40169,6 +40243,7 @@ typedef enum {
     WMI_ROAM_FAIL_REASON_NO_AP_FOUND_AND_FINAL_BMISS_SENT, /* No roamable APs found during roam scan and final bmiss event sent */
     WMI_ROAM_FAIL_REASON_NO_CAND_AP_FOUND_AND_FINAL_BMISS_SENT, /* No candidate APs found during roam scan and final bmiss event sent */
     WMI_ROAM_FAIL_REASON_CURR_AP_STILL_OK, /* Roam scan not happen due to current network condition is fine */
+    WMI_ROAM_FAIL_REASON_SCAN_CANCEL,      /* Roam scan canceled */
 
     WMI_ROAM_FAIL_REASON_UNKNOWN = 255,
 } WMI_ROAM_FAIL_REASON_ID;
@@ -40179,6 +40254,8 @@ typedef enum {
     WMI_ROAM_ABORT_LOWRSSI_LINK_SPEED_GOOD,    /* Roam scan is not started due to good link speed during low-RSSI roaming */
     WMI_ROAM_ABORT_BG_DATA_RSSI_HIGH,          /* Roam scan is not started due to high data RSSI during background roaming */
     WMI_ROAM_ABORT_BG_RSSI_ABOVE_THRESHOLD,    /* Roam scan is not started due to high beacon RSSI during background roaming */
+    WMI_ROAM_SCAN_CANCEL_IDLE_SCREEN_ON,       /* Idle roam scan is canceled due to screen on */
+    WMI_ROAM_SCAN_CANCEL_OTHER_PRIORITY_ROAM_SCAN, /* Roam scan is canceled due to other high priority roam scan */
 } WMI_ROAM_FAIL_SUB_REASON_ID;
 
 typedef struct {
@@ -45182,8 +45259,8 @@ typedef struct wmi_mlo_set_active_link_number_param
 
 } wmi_mlo_set_active_link_number_param;
 
-#define WMI_MLO_MODE_MLMR  0x1;
-#define WMI_MLO_MODE_EMLSR 0x2;
+#define WMI_MLO_MODE_MLMR  0x1
+#define WMI_MLO_MODE_EMLSR 0x2
 
 #define WMI_MLO_IEEE_LINK_ID_INVALID 0xFF
 
@@ -45335,6 +45412,7 @@ typedef enum wmi_mlo_tear_down_reason_code_type {
         WMI_MLO_TEARDOWN_HOST_INITIATED_REASON =
             WMI_MLO_TEARDOWN_REASON_HOST_INITIATED,
     WMI_MLO_TEARDOWN_REASON_STANDBY_DOWN,
+    WMI_MLO_TEARDOWN_REASON_DYNAMIC_WSI_REMAP,
 } WMI_MLO_TEARDOWN_REASON_TYPE;
 
 typedef struct {
