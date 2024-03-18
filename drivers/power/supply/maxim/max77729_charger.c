@@ -2241,6 +2241,7 @@ int max77729_usb_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+                break;
 	case POWER_SUPPLY_PROP_CURRENT_NOW:
 		break;
 	case POWER_SUPPLY_PROP_CURRENT_MAX:
