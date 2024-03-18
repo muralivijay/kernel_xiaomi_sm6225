@@ -301,16 +301,20 @@ struct sc8551 {
 static int __sc8551_read_byte(struct sc8551 *sc, u8 reg, u8 *data)
 {
 	s32 ret;
+	int cnt = 3;
 
-	ret = i2c_smbus_read_byte_data(sc->client, reg);
-	if (ret < 0) {
-		sc_err("i2c read fail: can't read from reg 0x%02X\n", reg);
-		return ret;
+	while (cnt--) {
+		ret = i2c_smbus_read_byte_data(sc->client, reg);
+		if (ret < 0) {
+			sc_err("i2c read fail: can't read from reg 0x%02X\n", reg);
+		} else {
+			*data = (u8) ret;
+			return 0;
+		}
+		udelay(200);
 	}
 
-	*data = (u8) ret;
-
-	return 0;
+	return ret;
 }
 
 static int __sc8551_write_byte(struct sc8551 *sc, int reg, u8 val)
