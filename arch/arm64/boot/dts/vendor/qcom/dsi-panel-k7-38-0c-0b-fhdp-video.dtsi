@@ -57,7 +57,7 @@ dsi_k7_38_0c_0b_video:
 		qcom,mdss-dsi-panel-status-read-length = <1>;
 		qcom,platform-en-gpio = <&pm6125_gpios 9 0>;
 		qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0";
-		qcom,panel-supply-entries = <22>;
+		qcom,panel-supply-entries = <&dsi_panel_pwr_supply_no_labibb>;
 		qcom,platform-reset-gpio = <&tlmm 82 0>;
 
 		qcom,mdss-dsi-display-timings {
