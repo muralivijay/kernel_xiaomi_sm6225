@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -1184,6 +1185,9 @@ get_serialization_cancel_type(enum scan_cancel_req_type type)
 		break;
 	case WLAN_SCAN_CANCEL_PDEV_ALL:
 		serialization_type = WLAN_SER_CANCEL_PDEV_SCANS;
+		break;
+	case WLAN_SCAN_CANCEL_HOST_VDEV_ALL:
+		serialization_type = WLAN_SER_CANCEL_VDEV_HOST_SCANS;
 		break;
 	default:
 		QDF_ASSERT(0);
