@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2020 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -5792,6 +5793,10 @@ static void wma_update_mlme_related_tgt_caps(struct wlan_objmgr_psoc *psoc,
 	mlme_tgt_cfg.data_stall_recovery_fw_support =
 		wmi_service_enabled(wmi_handle,
 				    wmi_service_data_stall_recovery_support);
+
+	mlme_tgt_cfg.stop_all_host_scan_support =
+		wmi_service_enabled(wmi_handle,
+				    wmi_service_host_scan_stop_vdev_all);
 
 	/* Call this at last only after filling all the tgt caps */
 	wlan_mlme_update_cfg_with_tgt_caps(psoc, &mlme_tgt_cfg);

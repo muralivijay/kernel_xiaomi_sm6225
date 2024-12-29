@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012-2020 The Linux Foundation. All rights reserved.
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022,2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -23217,6 +23217,8 @@ static QDF_STATUS csr_process_roam_sync_callback(struct mac_context *mac_ctx,
 	struct wlan_crypto_pmksa *pmksa;
 	enum csr_akm_type akm_type;
 	uint8_t mdie_present;
+	bool abort_host_scan_cap = false;
+	wlan_scan_id scan_id;
 
 	vdev = wlan_objmgr_get_vdev_by_id_from_psoc(mac_ctx->psoc, session_id,
 						    WLAN_LEGACY_SME_ID);
@@ -23271,8 +23273,31 @@ static QDF_STATUS csr_process_roam_sync_callback(struct mac_context *mac_ctx,
 				ROAMING_OFFLOAD_TIMER_START);
 		csr_roam_call_callback(mac_ctx, session_id, NULL, 0,
 				eCSR_ROAM_START, eCSR_ROAM_RESULT_SUCCESS);
+
+		/*
+		 * For emergency deauth roaming, firmware sends ROAM start
+		 * instead of ROAM scan start notification as data path queues
+		 * will be stopped only during roam start notification.
+		 * This is because, for deauth/disassoc triggered roam, the
+		 * AP has sent deauth, and packets shouldn't be sent to AP
+		 * after that. Since firmware is sending roam start directly
+		 * host sends scan abort during roam scan, but in other
+		 * triggers, the host receives roam start after candidate
+		 * selection and roam scan is complete. So when host sends
+		 * roam abort for emergency deauth roam trigger, the firmware
+		 * roam scan is also aborted. This results in roaming failure.
+		 * So send scan_id as CANCEL_HOST_SCAN_ID to scan module to
+		 * abort only host triggered scans.
+		 */
+		abort_host_scan_cap =
+			wlan_mlme_get_host_scan_abort_support(mac_ctx->psoc);
+		if (abort_host_scan_cap)
+			scan_id = CANCEL_HOST_SCAN_ID;
+		else
+			scan_id = INVAL_SCAN_ID;
+
 		wlan_abort_scan(mac_ctx->pdev, INVAL_PDEV_ID,
-				session_id, INVAL_SCAN_ID, false);
+				session_id, scan_id, false);
 		goto end;
 	case SIR_ROAMING_ABORT:
 		csr_roam_roaming_offload_timer_action(mac_ctx,
