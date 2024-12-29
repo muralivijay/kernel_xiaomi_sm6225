@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -5365,6 +5366,7 @@ typedef enum {
 	wmi_service_packet_capture_support,
 	wmi_service_peer_delete_no_peer_flush_tids_cmd,
 	wmi_service_suiteb_roam_support,
+	wmi_service_host_scan_stop_vdev_all,
 	wmi_services_max,
 } wmi_conv_service_ids;
 #define WMI_SERVICE_UNAVAILABLE 0xFFFF

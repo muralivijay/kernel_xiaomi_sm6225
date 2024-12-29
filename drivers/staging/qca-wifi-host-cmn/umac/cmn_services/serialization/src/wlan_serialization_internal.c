@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2017-2020 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -902,6 +903,7 @@ wlan_serialization_find_and_cancel_cmd(
 				WLAN_SER_CMD_SCAN, queue_type);
 		break;
 	case WLAN_SER_CANCEL_VDEV_SCANS:
+	case WLAN_SER_CANCEL_VDEV_HOST_SCANS:
 		/* remove all scan cmds which matches the vdev object */
 		status = wlan_serialization_cmd_cancel_handler(
 				ser_obj, NULL, NULL, cmd->vdev,
