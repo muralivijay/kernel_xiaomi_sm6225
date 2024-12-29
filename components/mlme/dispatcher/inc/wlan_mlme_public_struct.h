@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2019 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -944,12 +945,15 @@ struct wlan_mlme_chain_cfg {
 /**
  * struct mlme_tgt_caps - mlme related capability coming from target (FW)
  * @data_stall_recovery_fw_support: does target supports data stall recovery.
+ * @stop_all_host_scan_support: Target capability that indicates if the target
+ * supports stop all host scan request type.
  *
  * Add all the mlme-tgt related capablities here, and the public API would fill
  * the related capability in the required mlme cfg structure.
  */
 struct mlme_tgt_caps {
 	bool data_stall_recovery_fw_support;
+	bool stop_all_host_scan_support;
 };
 
 /**
@@ -1127,6 +1131,8 @@ struct wlan_mlme_chainmask {
  * @enable_peer_unmap_conf_support: Indicate whether to send conf for peer unmap
  * @disable_4way_hs_offload: enable/disable 4 way handshake offload to firmware
  * @dfs_chan_ageout_time: Set DFS Channel ageout time
+ * @stop_all_host_scan_support: Target capability that indicates if the target
+ * supports stop all host scan request type.
  */
 struct wlan_mlme_generic {
 	enum band_info band_capability;
@@ -1164,6 +1170,7 @@ struct wlan_mlme_generic {
 	bool enable_peer_unmap_conf_support;
 	bool disable_4way_hs_offload;
 	uint8_t dfs_chan_ageout_time;
+	bool stop_all_host_scan_support;
 };
 
 /*
