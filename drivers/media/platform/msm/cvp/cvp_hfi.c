@@ -872,9 +872,10 @@ static int __read_queue(struct cvp_iface_q_info *qinfo, u8 *packet,
 					new_read_idx << 2);
 		}
 		/*
-		 * Copy back the validated size to avoid security issue. As we are reading
-		 * the packet from a shared queue, there is a possibility to get the
-		 * packet->size data corrupted of shared queue by mallicious FW.
+		 * Copy back the validated size to avoid security issue.
+		 * As we are reading the packet from a shared queue,
+		 * there is a possibility to get the packet->size data
+		 * corrupted of shared queue by mallicious FW.
 		 */
 		*((u32 *) packet) = packet_size_in_words << 2;
 	} else {
