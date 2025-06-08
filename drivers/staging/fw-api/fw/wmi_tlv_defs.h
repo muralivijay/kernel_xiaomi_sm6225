@@ -1476,6 +1476,9 @@ typedef enum {
     WMITLV_TAG_STRUC_wmi_vdev_vbss_peer_sn_info,
     WMITLV_TAG_STRUC_wmi_vdev_vbss_config_event_fixed_param,
     WMITLV_TAG_STRUC_wmi_stats_ext_event_vdev_ext2_t,
+    WMITLV_TAG_STRUC_wmi_ndp_set_latency_tput_fixed_param,
+    WMITLV_TAG_STRUC_wmi_roam_partner_link_param,
+    WMITLV_TAG_STRUC_wmi_mlo_link_ttlm_complete_fixed_param,
 } WMITLV_TAG_ID;
 /*
  * IMPORTANT: Please add _ALL_ WMI Commands Here.
@@ -2037,6 +2040,8 @@ typedef enum {
     OP(WMI_MLO_LINK_RECONFIG_COMPLETE_CMDID) \
     OP(WMI_SAWF_EZMESH_HOP_COUNT_CMDID) \
     OP(WMI_VDEV_VBSS_CONFIG_CMDID) \
+    OP(WMI_NDP_SET_LATENCY_TPUT_CMDID) \
+    OP(WMI_MLO_LINK_TTLM_COMPLETE_CMDID) \
     /* add new CMD_LIST elements above this line */
 
 
@@ -4099,6 +4104,11 @@ WMITLV_CREATE_PARAM_STRUC(WMI_NDP_END_REQ_CMDID);
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_STRUC_wmi_ndp_cmd_param, wmi_ndp_cmd_param, fixed_param, WMITLV_SIZE_FIX)
 WMITLV_CREATE_PARAM_STRUC(WMI_NDP_CMDID);
 
+/* NDP Set Latency Tput Cmd */
+#define WMITLV_TABLE_WMI_NDP_SET_LATENCY_TPUT_CMDID(id,op,buf,len) \
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_STRUC_wmi_ndp_set_latency_tput_fixed_param, wmi_ndp_set_latency_tput_fixed_param, fixed_param, WMITLV_SIZE_FIX)
+WMITLV_CREATE_PARAM_STRUC(WMI_NDP_SET_LATENCY_TPUT_CMDID);
+
 /* RCPI Info Request Cmd */
 #define WMITLV_TABLE_WMI_REQUEST_RCPI_CMDID(id,op,buf,len) \
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_STRUC_wmi_request_rcpi_cmd_fixed_param, wmi_request_rcpi_cmd_fixed_param, fixed_param, WMITLV_SIZE_FIX)
@@ -5384,6 +5394,11 @@ WMITLV_CREATE_PARAM_STRUC(WMI_MLO_LINK_RECONFIG_CMDID);
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_STRUC_wmi_mlo_link_reconfig_complete_fixed_param, wmi_mlo_link_reconfig_complete_fixed_param, fixed_param, WMITLV_SIZE_FIX)
 WMITLV_CREATE_PARAM_STRUC(WMI_MLO_LINK_RECONFIG_COMPLETE_CMDID);
 
+/** WMI cmd to notify fw completion of link TTLM negotiation */
+#define WMITLV_TABLE_WMI_MLO_LINK_TTLM_COMPLETE_CMDID(id,op,buf,len) \
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_STRUC_wmi_mlo_link_ttlm_complete_fixed_param, wmi_mlo_link_ttlm_complete_fixed_param, fixed_param, WMITLV_SIZE_FIX)
+WMITLV_CREATE_PARAM_STRUC(WMI_MLO_LINK_TTLM_COMPLETE_CMDID);
+
 /* Mcast ipv4 address filter list cmd */
 #define WMITLV_TABLE_WMI_VDEV_IGMP_OFFLOAD_CMDID(id,op,buf,len) \
     WMITLV_ELEM(id, op, buf, len, WMITLV_TAG_STRUC_wmi_igmp_offload_fixed_param, wmi_igmp_offload_fixed_param, fixed_param, WMITLV_SIZE_FIX) \
@@ -5484,7 +5499,8 @@ WMITLV_CREATE_PARAM_STRUC(WMI_VDEV_MULTIPLE_PEER_GROUP_CMDID);
 /* RTT 11az PASN authentication status cmd */
 #define WMITLV_TABLE_WMI_RTT_PASN_AUTH_STATUS_CMD(id,op,buf,len) \
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_STRUC_wmi_rtt_pasn_auth_status_cmd_fixed_param, wmi_rtt_pasn_auth_status_cmd_fixed_param, fixed_param, WMITLV_SIZE_FIX) \
-    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_rtt_pasn_auth_status_param, pasn_auth_status_param, WMITLV_SIZE_VAR)
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_rtt_pasn_auth_status_param, pasn_auth_status_param, WMITLV_SIZE_VAR) \
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_BYTE, A_UINT8, cookie, WMITLV_SIZE_VAR)
 WMITLV_CREATE_PARAM_STRUC(WMI_RTT_PASN_AUTH_STATUS_CMD);
 
 /* RTT 11az PASN deauthentication cmd */
@@ -6091,7 +6107,8 @@ WMITLV_CREATE_PARAM_STRUC(WMI_AGGR_STATE_TRIG_EVENTID);
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_BYTE, A_UINT8, deauth_disassoc_frame, WMITLV_SIZE_VAR) \
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_pdev_hw_mode_transition_event_fixed_param, hw_mode_transition_fixed_param, WMITLV_SIZE_VAR) \
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_pdev_set_hw_mode_response_vdev_mac_entry, wmi_pdev_set_hw_mode_response_vdev_mac_mapping, WMITLV_SIZE_VAR) \
-    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_roam_bss_info_param, bss_info_param, WMITLV_SIZE_VAR)
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_roam_bss_info_param, bss_info_param, WMITLV_SIZE_VAR) \
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_roam_partner_link_param, partner_link_param, WMITLV_SIZE_VAR)
 WMITLV_CREATE_PARAM_STRUC(WMI_ROAM_EVENTID);
 
 /* Roam Synch Event */
@@ -7635,7 +7652,8 @@ WMITLV_CREATE_PARAM_STRUC(WMI_PDEV_PKTLOG_DECODE_INFO_EVENTID);
 #define WMITLV_TABLE_WMI_RTT_PASN_PEER_CREATE_REQ_EVENTID(id,op,buf,len) \
     WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_STRUC_wmi_rtt_pasn_peer_create_req_event_fixed_param, \
         wmi_rtt_pasn_peer_create_req_event_fixed_param, fixed_param, WMITLV_SIZE_FIX) \
-    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_rtt_pasn_peer_create_req_param, rtt_pasn_peer_param, WMITLV_SIZE_VAR)
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_STRUC, wmi_rtt_pasn_peer_create_req_param, rtt_pasn_peer_param, WMITLV_SIZE_VAR) \
+    WMITLV_ELEM(id,op,buf,len, WMITLV_TAG_ARRAY_BYTE, A_UINT8, cookie, WMITLV_SIZE_VAR)
 WMITLV_CREATE_PARAM_STRUC(WMI_RTT_PASN_PEER_CREATE_REQ_EVENTID);
 
 /* RTT 11az PASN peer delete event */

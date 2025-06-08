@@ -161,6 +161,18 @@ typedef enum {
     MODE_11BE_EHT40_2G = 32, /* For WIN */
 #endif
 
+#if defined(SUPPORT_11BN) && SUPPORT_11BN
+    MODE_11BN_UHR20 = 33,
+    MODE_11BN_UHR40 = 34,
+    MODE_11BN_UHR80 = 35,
+    MODE_11BN_UHR80_80 = 36,
+    MODE_11BN_UHR160 = 37,
+    MODE_11BN_UHR160_160 = 38,
+    MODE_11BN_UHR320 = 39,
+    MODE_11BN_UHR20_2G = 40,
+    MODE_11BN_UHR40_2G = 41,
+#endif
+
     /*
      * MODE_UNKNOWN should not be used within the host / target interface.
      * Thus, it is permissible for MODE_UNKNOWN to be conditionally-defined,
