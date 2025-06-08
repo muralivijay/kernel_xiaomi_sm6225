@@ -695,6 +695,7 @@ typedef  enum  {
     WMI_SERVICE_UMAC_MIGRATION_SUPPORT = 436, /* Indicates that FW supports UMAC migration */
     WMI_SERVICE_STA_TWT_STATS_EXT = 437, /* FW supports additional info in TWT stats and ADD COMPLETION Event */
     WMI_SERVICE_OPT_DP_DIAG_SUPPORT = 438, /* FW supports diag QDATA feature */
+    WMI_SERVICE_MLO_ROAM_PARTNER_BRINGUP_FROM_HOST = 439, /* Indicates FW supports new design in which FW expects the host to bringup the partner link during roaming */
 
 
     WMI_MAX_EXT2_SERVICE
