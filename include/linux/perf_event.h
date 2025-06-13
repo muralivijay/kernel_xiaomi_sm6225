@@ -597,6 +597,9 @@ struct perf_event {
 	/* The cumulative AND of all event_caps for events in this group. */
 	int				group_caps;
 
+#ifndef __GENKSYMS__	/* ANDROID Bug: 307236803 to keep the crc preserved */
+	unsigned int			group_generation;
+#endif
 	struct perf_event		*group_leader;
 
 	/*
@@ -694,8 +697,6 @@ struct perf_event {
 
 	struct pid_namespace		*ns;
 	u64				id;
-
-	atomic64_t			lost_samples;
 
 	u64				(*clock)(void);
 	perf_overflow_handler_t		overflow_handler;

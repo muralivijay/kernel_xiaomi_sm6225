@@ -978,7 +978,6 @@ static int enqueue_hrtimer(struct hrtimer *timer,
 			   enum hrtimer_mode mode)
 {
 	debug_activate(timer, mode);
-	WARN_ON_ONCE(!base->cpu_base->online);
 
 	base->cpu_base->active_bases |= 1 << base->index;
 
@@ -2076,6 +2075,7 @@ schedule_hrtimeout_range_clock(ktime_t *expires, u64 delta,
 
 	return !t.task ? 0 : -EINTR;
 }
+EXPORT_SYMBOL_GPL(schedule_hrtimeout_range_clock);
 
 /**
  * schedule_hrtimeout_range - sleep until timeout
